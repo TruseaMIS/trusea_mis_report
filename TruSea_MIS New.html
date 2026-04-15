@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>TruSea Fish — MIS Report</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f5f5f5;
+  color: #1a1a1a;
+  font-size: 14px;
+  padding-bottom: 40px;
+}
+
+/* ── HEADER ── */
+.header {
+  background: #1a1a2e;
+  padding: 18px 20px 14px;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.header h1 {
+  font-size: 20px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.5px;
+}
+.header h1 span { color: #90e0ef; }
+.header-sub {
+  font-size: 11px;
+  color: rgba(255,255,255,0.45);
+  margin-top: 4px;
+  letter-spacing: 0.3px;
+}
+.sync-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.sync-info {
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+}
+.sync-btn {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 11px;
+  color: #fff;
+  cursor: pointer;
+}
+.sync-btn:active { opacity: 0.7; }
+
+/* ── DATE BANNER ── */
+.date-banner {
+  background: #fff;
+  border-bottom: 1px solid #e8e8e8;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.date-banner .today-lbl {
+  font-size: 12px;
+  color: #888;
+  font-weight: 500;
+}
+.date-banner .today-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+/* ── SECTION ── */
+.section {
+  padding: 16px 16px 0;
+}
+.section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #888;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e8e8e8;
+}
+
+/* ── MIS CARD ── */
+.mis-card {
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid #ebebeb;
+  overflow: hidden;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+.mis-card-header {
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.mis-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+.mis-card-range {
+  font-size: 11px;
+  color: #888;
+  margin-top: 2px;
+  font-weight: 500;
+}
+.mis-card-icon {
+  font-size: 22px;
+  opacity: 0.6;
+}
+
+/* ── METRICS ROW ── */
+.metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: #f0f0f0;
+}
+.metric {
+  background: #fff;
+  padding: 14px 16px;
+  text-align: center;
+}
+.metric-val {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  color: #1a1a2e;
+  line-height: 1;
+}
+.metric-val.money { font-size: 22px; }
+.metric-lbl {
+  font-size: 11px;
+  color: #888;
+  margin-top: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* ── ORDER BREAKDOWN TABLE ── */
+.breakdown {
+  padding: 0 16px 14px;
+}
+.breakdown-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 10px 0 6px;
+  border-top: 1px solid #f0f0f0;
+  margin-top: 2px;
+}
+.breakdown-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 0;
+  border-bottom: 1px solid #f7f7f7;
+  gap: 8px;
+}
+.breakdown-row:last-child { border-bottom: none; }
+.br-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #1a1a2e;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.br-time {
+  font-size: 11px;
+  color: #aaa;
+  white-space: nowrap;
+}
+.br-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1a1a2e;
+  white-space: nowrap;
+}
+
+/* ── EMPTY ── */
+.empty-row {
+  text-align: center;
+  padding: 20px;
+  color: #bbb;
+  font-size: 13px;
+}
+
+/* ── LOADING ── */
+.loading {
+  text-align: center;
+  padding: 60px 20px;
+  color: #aaa;
+  font-size: 14px;
+}
+.spinner {
+  width: 28px; height: 28px;
+  border: 3px solid #eee;
+  border-top-color: #1a1a2e;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 12px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── OVERVIEW SNAPSHOT ── */
+.overview-snap {
+  background: #fff;
+  margin: 12px 12px 0;
+  border-radius: 16px;
+  border: 1px solid #e0e0e0;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+.snap-header {
+  background: #1a1a2e;
+  padding: 14px 16px 12px;
+  text-align: center;
+}
+.snap-brand {
+  font-size: 17px;
+  font-weight: 800;
+  color: #90e0ef;
+  letter-spacing: -0.3px;
+}
+.snap-title {
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 2px;
+}
+.snap-time {
+  font-size: 10px;
+  color: rgba(255,255,255,0.35);
+  margin-top: 4px;
+}
+
+/* 3-column grid */
+.snap-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+}
+.snap-col {
+  padding: 14px 10px;
+  text-align: center;
+  border-right: 1px solid #f0f0f0;
+}
+.snap-col:last-child { border-right: none; }
+.snap-col-mid {
+  background: #fafafa;
+}
+.snap-col-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+.snap-col-date {
+  font-size: 9px;
+  color: #aaa;
+  margin-bottom: 8px;
+}
+.snap-big {
+  font-size: 30px;
+  font-weight: 900;
+  color: #1a1a2e;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+.snap-money {
+  font-size: 15px;
+  font-weight: 800;
+  color: #1a1a2e;
+  letter-spacing: -0.5px;
+}
+.snap-small-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: #444;
+}
+.snap-sub-lbl {
+  font-size: 9px;
+  color: #aaa;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-top: 1px;
+  margin-bottom: 4px;
+}
+.snap-divider {
+  height: 1px;
+  background: #f0f0f0;
+  margin: 6px 0;
+}
+
+/* Today's orders inside snapshot */
+.snap-today-orders {
+  border-top: 1px solid #f0f0f0;
+  padding: 10px 14px 12px;
+}
+.snap-today-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #888;
+  margin-bottom: 8px;
+}
+.snap-order-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid #f7f7f7;
+}
+.snap-order-row:last-of-type { border-bottom: none; }
+.snap-order-num {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #f0f0f0;
+  font-size: 10px;
+  font-weight: 700;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.snap-order-name {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1a1a2e;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.snap-order-time {
+  font-size: 10px;
+  color: #aaa;
+  white-space: nowrap;
+}
+.snap-order-val {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1a1a2e;
+  white-space: nowrap;
+  min-width: 55px;
+  text-align: right;
+}
+.snap-order-total-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 0 0;
+  border-top: 1.5px solid #e0e0e0;
+  margin-top: 4px;
+}
+.snap-empty {
+  text-align: center;
+  font-size: 12px;
+  color: #bbb;
+  padding: 10px 0;
+}
+.snap-footer {
+  text-align: center;
+  font-size: 9px;
+  color: #ccc;
+  padding: 8px;
+  border-top: 1px solid #f5f5f5;
+  background: #fafafa;
+}
+
+/* ── FOOTER NOTE ── */
+.footer-note {
+  text-align: center;
+  font-size: 11px;
+  color: #bbb;
+  padding: 20px;
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <h1>🐟 Tru<span>Sea</span> Fish</h1>
+  <div class="header-sub">MIS REPORT · MANAGEMENT SUMMARY</div>
+  <div class="sync-row">
+    <span class="sync-info" id="syncInfo">Loading…</span>
+    <button class="sync-btn" onclick="init()">⟳ Refresh</button>
+  </div>
+</div>
+
+<!-- DATE BANNER -->
+<div class="date-banner">
+  <div>
+    <div class="today-lbl">Report Date</div>
+    <div class="today-val" id="reportDate">—</div>
+  </div>
+  <div style="text-align:right">
+    <div class="today-lbl">Fiscal Year Start</div>
+    <div class="today-val" id="fyStart">—</div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div id="content">
+  <div class="loading"><div class="spinner"></div>Fetching data from sheet…</div>
+</div>
+
+<div class="footer-note" id="footerNote"></div>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────
+const SHEET_ID = '1LdJAHcoYX8ruxVEKG5j-X1KyaZohOLfhyYaUBmsVoyI';
+const GID      = '1633140334'; // Sheet2
+
+// Column mapping (A to K)
+const COL = {
+  timestamp:  'Timestamp',    // A
+  orderId:    'Order ID',     // B
+  name:       'Name',         // C
+  phone:      'Phone',        // D
+  address:    'Address',      // E
+  mapLink:    'Map Link',     // F
+  product:    'Product',      // G
+  addons:     'Add-ons',      // H
+  prebook:    'Pre-Book',     // I
+  price:      'Price',        // J  (skip display)
+  orderTotal: 'Order Total',  // K
+};
+
+// Fiscal year start month (0 = Jan, 3 = Apr)
+const FY_START_MONTH = 3; // April
+
+// ── DATE HELPERS ────────────────────────────────────
+const today = new Date();
+today.setHours(0,0,0,0);
+
+function startOfDay(d) { const x=new Date(d); x.setHours(0,0,0,0); return x; }
+function endOfDay(d)   { const x=new Date(d); x.setHours(23,59,59,999); return x; }
+
+// Today
+const todayStart = startOfDay(today);
+const todayEnd   = endOfDay(today);
+
+// Month to date: 1st of current month → today
+const mtdStart = new Date(today.getFullYear(), today.getMonth(), 1);
+const mtdEnd   = endOfDay(today);
+
+// Year to date: April 1st of current fiscal year → today
+function getFYStart() {
+  const yr  = today.getFullYear();
+  const mon = today.getMonth();
+  // If current month is before FY_START_MONTH, FY started previous year
+  const fyYear = mon < FY_START_MONTH ? yr - 1 : yr;
+  return new Date(fyYear, FY_START_MONTH, 1);
+}
+const ytdStart = getFYStart();
+const ytdEnd   = endOfDay(today);
+
+// Format date nicely
+function fmt(d) {
+  return d.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+}
+function fmtShort(d) {
+  return d.toLocaleDateString('en-IN', { day:'2-digit', month:'short' });
+}
+
+// Update date banner
+document.getElementById('reportDate').textContent = fmt(today);
+document.getElementById('fyStart').textContent    = fmt(ytdStart);
+
+// ── FETCH ────────────────────────────────────────────
+function fetchSheet() {
+  return new Promise((resolve, reject) => {
+    document.querySelectorAll('script[id^="mis_"]').forEach(s => s.remove());
+    Object.keys(window).filter(k => k.startsWith('__misCB_')).forEach(k => delete window[k]);
+
+    const cb    = '__misCB_' + Date.now();
+    const timer = setTimeout(() => { delete window[cb]; reject(new Error('Timeout')); }, 12000);
+
+    window[cb] = function(data) {
+      clearTimeout(timer);
+      delete window[cb];
+      try {
+        if (!data.table || !data.table.rows || !data.table.rows.length)
+          return reject(new Error('No data'));
+
+        const labels = (data.table.cols || []).map(c => (c.label||'').trim());
+        const fi = name => {
+          if (!name) return -1;
+          let i = labels.findIndex(c => c === name);
+          if (i >= 0) return i;
+          i = labels.findIndex(c => c.toLowerCase() === name.toLowerCase());
+          if (i >= 0) return i;
+          return labels.findIndex(c => c.toLowerCase().includes(name.toLowerCase()));
+        };
+
+        const iTs    = fi(COL.timestamp);
+        const iName  = fi(COL.name);
+        const iTotal = fi(COL.orderTotal);
+
+        const v  = (r,i) => (i>=0 && r.c[i] && r.c[i].v!=null) ? String(r.c[i].v).trim() : '';
+        const fv = (r,i) => (i>=0 && r.c[i]) ? (r.c[i].f || v(r,i)) : '';
+
+        // Parse timestamp → JS Date
+        const parseTs = (r, i) => {
+          if (i < 0 || !r.c[i] || r.c[i].v == null) return null;
+          const raw = r.c[i].v;
+          if (typeof raw === 'string' && raw.startsWith('Date(')) {
+            const p = raw.replace('Date(','').replace(')','').split(',');
+            return new Date(+p[0], +p[1], +p[2], +(p[3]||0), +(p[4]||0));
+          }
+          // Try parsing formatted value
+          if (r.c[i].f) {
+            const d = new Date(r.c[i].f);
+            if (!isNaN(d)) return d;
+          }
+          return null;
+        };
+
+        // Parse order total → number
+        const parseTotal = str => {
+          if (!str) return 0;
+          const n = parseFloat(str.replace(/[^0-9.]/g,''));
+          return isNaN(n) ? 0 : n;
+        };
+
+        const rows = data.table.rows.map((r, idx) => ({
+          name:  v(r, iName),
+          ts:    parseTs(r, iTs),
+          total: parseTotal(fv(r, iTotal) || v(r, iTotal)),
+        })).filter(o => o.name && o.name.length > 1 && o.ts);
+
+        resolve(rows);
+      } catch(e) { reject(e); }
+    };
+
+    const s   = document.createElement('script');
+    s.id      = 'mis_' + Date.now();
+    s.src     = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json;responseHandler:${cb}&gid=${GID}&v=${Date.now()}&r=${Math.random()}`;
+    s.onerror = () => { clearTimeout(timer); reject(new Error('Failed to load')); };
+    document.head.appendChild(s);
+  });
+}
+
+// ── FILTER HELPERS ───────────────────────────────────
+function inRange(o, start, end) {
+  if (!o.ts) return false;
+  return o.ts >= start && o.ts <= end;
+}
+
+function sumTotal(list) {
+  return list.reduce((acc, o) => acc + o.total, 0);
+}
+
+function fmtMoney(n) {
+  return '₹' + n.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+}
+
+function fmtTime(d) {
+  if (!d) return '';
+  return d.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', hour12:true });
+}
+
+// ── RENDER ───────────────────────────────────────────
+function renderMIS(allRows) {
+  const todayOrders = allRows.filter(o => inRange(o, todayStart, todayEnd));
+  const mtdOrders   = allRows.filter(o => inRange(o, mtdStart,   mtdEnd));
+  const ytdOrders   = allRows.filter(o => inRange(o, ytdStart,   ytdEnd));
+
+  const todaySum = sumTotal(todayOrders);
+  const mtdSum   = sumTotal(mtdOrders);
+  const ytdSum   = sumTotal(ytdOrders);
+
+  // Latest order time today
+  const latestOrder = todayOrders.length
+    ? todayOrders.slice().sort((a,b) => b.ts - a.ts)[0]
+    : null;
+
+  // Avg order value today
+  const avgToday = todayOrders.length ? Math.round(todaySum / todayOrders.length) : 0;
+  const avgMtd   = mtdOrders.length   ? Math.round(mtdSum   / mtdOrders.length)   : 0;
+
+  const nowStr = new Date().toLocaleString('en-IN', {
+    day:'2-digit', month:'short', year:'numeric',
+    hour:'2-digit', minute:'2-digit', hour12:true
+  });
+
+  const html = `
+
+    <!-- ══════════════════════════════════════════ -->
+    <!--        OVERVIEW SNAPSHOT (screenshot)      -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="overview-snap" id="overviewSnap">
+
+      <!-- Snap Header -->
+      <div class="snap-header">
+        <div class="snap-brand">🐟 TruSea Fish</div>
+        <div class="snap-title">MIS Report</div>
+        <div class="snap-time">${nowStr}</div>
+      </div>
+
+      <!-- 3 Column Summary -->
+      <div class="snap-grid">
+
+        <div class="snap-col">
+          <div class="snap-col-label">📦 Today</div>
+          <div class="snap-col-date">${fmt(today)}</div>
+          <div class="snap-big">${todayOrders.length}</div>
+          <div class="snap-sub-lbl">Orders</div>
+          <div class="snap-divider"></div>
+          <div class="snap-money">${fmtMoney(todaySum)}</div>
+          <div class="snap-sub-lbl">Total Value</div>
+          <div class="snap-divider"></div>
+          <div class="snap-small-val">${fmtMoney(avgToday)}</div>
+          <div class="snap-sub-lbl">Avg / Order</div>
+          ${latestOrder ? `
+          <div class="snap-divider"></div>
+          <div class="snap-small-val">${fmtTime(latestOrder.ts)}</div>
+          <div class="snap-sub-lbl">Latest Order</div>` : ''}
+        </div>
+
+        <div class="snap-col snap-col-mid">
+          <div class="snap-col-label">📅 MTD</div>
+          <div class="snap-col-date">${fmtShort(mtdStart)} – ${fmtShort(today)}</div>
+          <div class="snap-big">${mtdOrders.length}</div>
+          <div class="snap-sub-lbl">Orders</div>
+          <div class="snap-divider"></div>
+          <div class="snap-money">${fmtMoney(mtdSum)}</div>
+          <div class="snap-sub-lbl">Total Value</div>
+          <div class="snap-divider"></div>
+          <div class="snap-small-val">${fmtMoney(avgMtd)}</div>
+          <div class="snap-sub-lbl">Avg / Order</div>
+          <div class="snap-divider"></div>
+          <div class="snap-small-val">${today.getDate()} days</div>
+          <div class="snap-sub-lbl">Days Elapsed</div>
+        </div>
+
+        <div class="snap-col">
+          <div class="snap-col-label">📊 YTD</div>
+          <div class="snap-col-date">${fmtShort(ytdStart)} – ${fmtShort(today)}</div>
+          <div class="snap-big">${ytdOrders.length}</div>
+          <div class="snap-sub-lbl">Orders</div>
+          <div class="snap-divider"></div>
+          <div class="snap-money">${fmtMoney(ytdSum)}</div>
+          <div class="snap-sub-lbl">Total Value</div>
+          <div class="snap-divider"></div>
+          <div class="snap-small-val">${ytdOrders.length ? fmtMoney(Math.round(ytdSum/ytdOrders.length)) : '—'}</div>
+          <div class="snap-sub-lbl">Avg / Order</div>
+          <div class="snap-divider"></div>
+          <div class="snap-small-val">${Math.round((new Date()-ytdStart)/(1000*60*60*24))} days</div>
+          <div class="snap-sub-lbl">Days Elapsed</div>
+        </div>
+
+      </div>
+
+      <!-- Today's customer list inside snapshot -->
+      <div class="snap-today-orders">
+        <div class="snap-today-title">Today's Orders</div>
+        ${todayOrders.length === 0
+          ? `<div class="snap-empty">No orders today yet</div>`
+          : todayOrders.slice().reverse().map((o, i) => `
+            <div class="snap-order-row">
+              <div class="snap-order-num">${i+1}</div>
+              <div class="snap-order-name">${o.name}</div>
+              <div class="snap-order-time">${fmtTime(o.ts)}</div>
+              <div class="snap-order-val">${o.total ? fmtMoney(o.total) : '—'}</div>
+            </div>`).join('')
+        }
+        ${todayOrders.length > 0 ? `
+        <div class="snap-order-total-row">
+          <div style="flex:1;font-weight:700;font-size:12px">Total</div>
+          <div class="snap-order-val" style="font-weight:800;color:#1a1a2e">${fmtMoney(todaySum)}</div>
+        </div>` : ''}
+      </div>
+
+      <div class="snap-footer">Powered by TruSea Fish · Auto-synced from Google Sheets</div>
+    </div>
+
+    <!-- ── DETAILED SECTIONS BELOW ── -->
+    <div class="section">
+      <div class="section-title">Today</div>
+      <div class="mis-card">
+        <div class="mis-card-header">
+          <div>
+            <div class="mis-card-title">Daily Orders</div>
+            <div class="mis-card-range">${fmt(today)}</div>
+          </div>
+          <div class="mis-card-icon">📦</div>
+        </div>
+        <div class="metrics">
+          <div class="metric">
+            <div class="metric-val">${todayOrders.length}</div>
+            <div class="metric-lbl">Total Orders</div>
+          </div>
+          <div class="metric">
+            <div class="metric-val money">${fmtMoney(todaySum)}</div>
+            <div class="metric-lbl">Order Value</div>
+          </div>
+        </div>
+        <div class="breakdown">
+          <div class="breakdown-title">Order Breakdown</div>
+          ${todayOrders.length === 0
+            ? `<div class="empty-row">No orders today yet</div>`
+            : todayOrders.slice().reverse().map(o => `
+              <div class="breakdown-row">
+                <div class="br-name">${o.name}</div>
+                <div class="br-time">${fmtTime(o.ts)}</div>
+                <div class="br-val">${o.total ? fmtMoney(o.total) : '—'}</div>
+              </div>`).join('')
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MTD ── -->
+    <div class="section">
+      <div class="section-title">Month to Date</div>
+      <div class="mis-card">
+        <div class="mis-card-header">
+          <div>
+            <div class="mis-card-title">Monthly Orders</div>
+            <div class="mis-card-range">${fmtShort(mtdStart)} – ${fmtShort(today)}</div>
+          </div>
+          <div class="mis-card-icon">📅</div>
+        </div>
+        <div class="metrics">
+          <div class="metric">
+            <div class="metric-val">${mtdOrders.length}</div>
+            <div class="metric-lbl">Total Orders</div>
+          </div>
+          <div class="metric">
+            <div class="metric-val money">${fmtMoney(mtdSum)}</div>
+            <div class="metric-lbl">Order Value</div>
+          </div>
+        </div>
+        <div class="breakdown">
+          <div class="breakdown-title">Daily Breakdown</div>
+          ${renderDailyBreakdown(mtdOrders, mtdStart, today)}
+        </div>
+      </div>
+    </div>
+
+    <!-- ── YTD ── -->
+    <div class="section">
+      <div class="section-title">Year to Date</div>
+      <div class="mis-card">
+        <div class="mis-card-header">
+          <div>
+            <div class="mis-card-title">Yearly Orders</div>
+            <div class="mis-card-range">${fmtShort(ytdStart)} – ${fmtShort(today)}</div>
+          </div>
+          <div class="mis-card-icon">📊</div>
+        </div>
+        <div class="metrics">
+          <div class="metric">
+            <div class="metric-val">${ytdOrders.length}</div>
+            <div class="metric-lbl">Total Orders</div>
+          </div>
+          <div class="metric">
+            <div class="metric-val money">${fmtMoney(ytdSum)}</div>
+            <div class="metric-lbl">Order Value</div>
+          </div>
+        </div>
+        <div class="breakdown">
+          <div class="breakdown-title">Monthly Breakdown</div>
+          ${renderMonthlyBreakdown(ytdOrders, ytdStart, today)}
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('content').innerHTML = html;
+  document.getElementById('footerNote').textContent =
+    `Data from Google Sheets · ${allRows.length} total records · Last sync: ${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}`;
+}
+
+// Daily breakdown for MTD (one row per day)
+function renderDailyBreakdown(orders, start, end) {
+  if (!orders.length) return `<div class="empty-row">No orders this month yet</div>`;
+
+  const days = [];
+  const cur = new Date(start);
+  while (cur <= end) {
+    const dayStart = startOfDay(cur);
+    const dayEnd   = endOfDay(cur);
+    const dayOrders = orders.filter(o => inRange(o, dayStart, dayEnd));
+    if (dayOrders.length > 0) {
+      days.push({ date: new Date(cur), count: dayOrders.length, total: sumTotal(dayOrders) });
+    }
+    cur.setDate(cur.getDate() + 1);
+  }
+
+  return days.slice().reverse().map(d => `
+    <div class="breakdown-row">
+      <div class="br-name">${d.date.toLocaleDateString('en-IN',{weekday:'short',day:'2-digit',month:'short'})}</div>
+      <div class="br-time">${d.count} order${d.count>1?'s':''}</div>
+      <div class="br-val">${fmtMoney(d.total)}</div>
+    </div>`).join('');
+}
+
+// Monthly breakdown for YTD (one row per month)
+function renderMonthlyBreakdown(orders, start, end) {
+  if (!orders.length) return `<div class="empty-row">No orders this year yet</div>`;
+
+  const months = [];
+  const cur = new Date(start.getFullYear(), start.getMonth(), 1);
+  while (cur <= end) {
+    const mStart = new Date(cur.getFullYear(), cur.getMonth(), 1);
+    const mEnd   = new Date(cur.getFullYear(), cur.getMonth()+1, 0, 23, 59, 59);
+    const mOrders = orders.filter(o => inRange(o, mStart, mEnd));
+    months.push({
+      label:  cur.toLocaleDateString('en-IN',{month:'long',year:'numeric'}),
+      count:  mOrders.length,
+      total:  sumTotal(mOrders),
+    });
+    cur.setMonth(cur.getMonth() + 1);
+  }
+
+  return months.slice().reverse().map(m => `
+    <div class="breakdown-row">
+      <div class="br-name">${m.label}</div>
+      <div class="br-time">${m.count} order${m.count>1?'s':''}</div>
+      <div class="br-val">${fmtMoney(m.total)}</div>
+    </div>`).join('');
+}
+
+// ── INIT ─────────────────────────────────────────────
+async function init() {
+  document.getElementById('syncInfo').textContent = 'Syncing…';
+  document.getElementById('content').innerHTML =
+    '<div class="loading"><div class="spinner"></div>Fetching data…</div>';
+  try {
+    const rows = await fetchSheet();
+    renderMIS(rows);
+    document.getElementById('syncInfo').textContent =
+      `✓ Synced · ${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}`;
+  } catch(e) {
+    document.getElementById('syncInfo').textContent = '⚠ Could not connect to sheet';
+    document.getElementById('content').innerHTML =
+      `<div class="loading">⚠ ${e.message}<br><br>Make sure sheet is shared as<br>"Anyone with the link → Viewer"</div>`;
+  }
+}
+
+// Auto sync every 10 minutes
+init();
+setInterval(init, 10 * 60 * 1000);
+</script>
+</body>
+</html>
