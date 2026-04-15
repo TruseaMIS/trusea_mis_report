@@ -8,20 +8,21 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: #f5f5f5;
-  color: #1a1a1a;
+  background: #f0f2f5;
+  color: #1a1a2e;
   font-size: 14px;
-  padding-bottom: 40px;
+  padding-bottom: 60px;
 }
 
 /* ── HEADER ── */
 .header {
-  background: #1a1a2e;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
   padding: 18px 20px 14px;
   text-align: center;
   position: sticky;
   top: 0;
   z-index: 10;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.2);
 }
 .header h1 {
   font-size: 20px;
@@ -55,6 +56,7 @@ body {
   font-size: 11px;
   color: #fff;
   cursor: pointer;
+  transition: background 0.2s;
 }
 .sync-btn:active { opacity: 0.7; }
 
@@ -67,21 +69,118 @@ body {
   align-items: center;
   justify-content: space-between;
 }
-.date-banner .today-lbl {
-  font-size: 12px;
-  color: #888;
-  font-weight: 500;
+.date-banner .today-lbl { font-size: 12px; color: #888; font-weight: 500; }
+.date-banner .today-val { font-size: 13px; font-weight: 700; color: #1a1a2e; }
+
+/* ══════════════════════════════════════
+   TOP PROFIT SUMMARY STRIP
+══════════════════════════════════════ */
+.profit-strip {
+  margin: 14px 14px 0;
+  background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+  border-radius: 18px;
+  padding: 18px 16px;
+  box-shadow: 0 4px 20px rgba(26,26,46,0.25);
+  position: relative;
+  overflow: hidden;
 }
-.date-banner .today-val {
-  font-size: 13px;
+.profit-strip::before {
+  content: '🐟';
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 52px;
+  opacity: 0.08;
+}
+.profit-strip-title {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: rgba(255,255,255,0.45);
+  margin-bottom: 12px;
+}
+.profit-3col {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+}
+.profit-col {
+  text-align: center;
+  padding: 0 8px;
+  border-right: 1px solid rgba(255,255,255,0.1);
+}
+.profit-col:last-child { border-right: none; }
+.profit-label {
+  font-size: 9px;
   font-weight: 700;
-  color: #1a1a2e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 4px;
+}
+.profit-value {
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+.profit-value.green  { color: #4ade80; }
+.profit-value.red    { color: #f87171; }
+.profit-value.white  { color: #ffffff; }
+.profit-value.cyan   { color: #90e0ef; }
+.profit-sub {
+  font-size: 9px;
+  color: rgba(255,255,255,0.3);
+  margin-top: 3px;
+}
+.profit-badge {
+  display: inline-block;
+  margin-top: 6px;
+  background: rgba(74,222,128,0.15);
+  border: 1px solid rgba(74,222,128,0.3);
+  color: #4ade80;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 20px;
+  padding: 2px 8px;
+}
+.profit-badge.loss {
+  background: rgba(248,113,113,0.15);
+  border-color: rgba(248,113,113,0.3);
+  color: #f87171;
+}
+
+/* ══════════════════════════════════════
+   PERIOD TABS
+══════════════════════════════════════ */
+.tab-row {
+  display: flex;
+  gap: 8px;
+  padding: 14px 14px 0;
+  overflow-x: auto;
+}
+.tab-btn {
+  flex-shrink: 0;
+  padding: 7px 16px;
+  border-radius: 20px;
+  border: 1.5px solid #e0e0e0;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  color: #888;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.tab-btn.active {
+  background: #1a1a2e;
+  border-color: #1a1a2e;
+  color: #fff;
 }
 
 /* ── SECTION ── */
-.section {
-  padding: 16px 16px 0;
-}
+.section { padding: 14px 14px 0; }
 .section-title {
   font-size: 11px;
   font-weight: 700;
@@ -103,11 +202,11 @@ body {
 /* ── MIS CARD ── */
 .mis-card {
   background: #fff;
-  border-radius: 14px;
+  border-radius: 16px;
   border: 1px solid #ebebeb;
   overflow: hidden;
   margin-bottom: 12px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 .mis-card-header {
   padding: 14px 16px 10px;
@@ -116,21 +215,9 @@ body {
   align-items: flex-start;
   justify-content: space-between;
 }
-.mis-card-title {
-  font-size: 14px;
-  font-weight: 700;
-  color: #1a1a2e;
-}
-.mis-card-range {
-  font-size: 11px;
-  color: #888;
-  margin-top: 2px;
-  font-weight: 500;
-}
-.mis-card-icon {
-  font-size: 22px;
-  opacity: 0.6;
-}
+.mis-card-title { font-size: 14px; font-weight: 700; color: #1a1a2e; }
+.mis-card-range { font-size: 11px; color: #888; margin-top: 2px; font-weight: 500; }
+.mis-card-icon { font-size: 22px; opacity: 0.6; }
 
 /* ── METRICS ROW ── */
 .metrics {
@@ -139,21 +226,24 @@ body {
   gap: 1px;
   background: #f0f0f0;
 }
+.metrics.three { grid-template-columns: 1fr 1fr 1fr; }
 .metric {
   background: #fff;
-  padding: 14px 16px;
+  padding: 14px 12px;
   text-align: center;
 }
 .metric-val {
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 800;
   letter-spacing: -1px;
   color: #1a1a2e;
   line-height: 1;
 }
-.metric-val.money { font-size: 22px; }
+.metric-val.money { font-size: 19px; }
+.metric-val.green { color: #16a34a; }
+.metric-val.red   { color: #dc2626; }
 .metric-lbl {
-  font-size: 11px;
+  font-size: 10px;
   color: #888;
   margin-top: 4px;
   font-weight: 600;
@@ -161,10 +251,8 @@ body {
   letter-spacing: 0.3px;
 }
 
-/* ── ORDER BREAKDOWN TABLE ── */
-.breakdown {
-  padding: 0 16px 14px;
-}
+/* ── BREAKDOWN ── */
+.breakdown { padding: 0 16px 14px; }
 .breakdown-title {
   font-size: 11px;
   font-weight: 700;
@@ -179,92 +267,73 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 7px 0;
+  padding: 8px 0;
   border-bottom: 1px solid #f7f7f7;
   gap: 8px;
 }
 .breakdown-row:last-child { border-bottom: none; }
-.br-name {
-  font-size: 13px;
-  font-weight: 500;
-  color: #1a1a2e;
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.br-name { font-size: 13px; font-weight: 500; color: #1a1a2e; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.br-time { font-size: 11px; color: #aaa; white-space: nowrap; }
+.br-val  { font-size: 13px; font-weight: 700; color: #1a1a2e; white-space: nowrap; }
+.br-val.green { color: #16a34a; }
+.br-val.red   { color: #dc2626; }
+
+/* ── CAMPAIGN TABLE ── */
+.campaign-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid #f7f7f7;
 }
-.br-time {
-  font-size: 11px;
-  color: #aaa;
-  white-space: nowrap;
-}
-.br-val {
-  font-size: 13px;
+.campaign-row:last-child { border-bottom: none; }
+.camp-platform {
+  background: #f0f0f0;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 10px;
   font-weight: 700;
-  color: #1a1a2e;
+  color: #555;
   white-space: nowrap;
 }
+.camp-platform.meta   { background: #e8f0fe; color: #1a73e8; }
+.camp-platform.google { background: #fef3e2; color: #f59e0b; }
+.camp-platform.insta  { background: #fce7f3; color: #db2777; }
+.camp-week { font-size: 12px; color: #666; flex: 1; }
+.camp-amount { font-size: 13px; font-weight: 700; color: #dc2626; white-space: nowrap; }
+.camp-notes { font-size: 10px; color: #aaa; }
 
-/* ── EMPTY ── */
-.empty-row {
-  text-align: center;
-  padding: 20px;
-  color: #bbb;
-  font-size: 13px;
+/* ── ROI PILL ── */
+.roi-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
 }
-
-/* ── LOADING ── */
-.loading {
-  text-align: center;
-  padding: 60px 20px;
-  color: #aaa;
-  font-size: 14px;
-}
-.spinner {
-  width: 28px; height: 28px;
-  border: 3px solid #eee;
-  border-top-color: #1a1a2e;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin: 0 auto 12px;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
+.roi-pill.good { background: #dcfce7; color: #16a34a; }
+.roi-pill.bad  { background: #fee2e2; color: #dc2626; }
 
 /* ── OVERVIEW SNAPSHOT ── */
 .overview-snap {
   background: #fff;
-  margin: 12px 12px 0;
-  border-radius: 16px;
+  margin: 14px 14px 0;
+  border-radius: 18px;
   border: 1px solid #e0e0e0;
   overflow: hidden;
   box-shadow: 0 2px 12px rgba(0,0,0,0.08);
 }
 .snap-header {
-  background: #1a1a2e;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
   padding: 14px 16px 12px;
   text-align: center;
 }
-.snap-brand {
-  font-size: 17px;
-  font-weight: 800;
-  color: #90e0ef;
-  letter-spacing: -0.3px;
-}
-.snap-title {
-  font-size: 11px;
-  color: rgba(255,255,255,0.5);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-top: 2px;
-}
-.snap-time {
-  font-size: 10px;
-  color: rgba(255,255,255,0.35);
-  margin-top: 4px;
-}
+.snap-brand { font-size: 17px; font-weight: 800; color: #90e0ef; letter-spacing: -0.3px; }
+.snap-title { font-size: 11px; color: rgba(255,255,255,0.5); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+.snap-time  { font-size: 10px; color: rgba(255,255,255,0.35); margin-top: 4px; }
 
-/* 3-column grid */
 .snap-grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -276,68 +345,17 @@ body {
   border-right: 1px solid #f0f0f0;
 }
 .snap-col:last-child { border-right: none; }
-.snap-col-mid {
-  background: #fafafa;
-}
-.snap-col-label {
-  font-size: 11px;
-  font-weight: 700;
-  color: #888;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 2px;
-}
-.snap-col-date {
-  font-size: 9px;
-  color: #aaa;
-  margin-bottom: 8px;
-}
-.snap-big {
-  font-size: 30px;
-  font-weight: 900;
-  color: #1a1a2e;
-  line-height: 1;
-  letter-spacing: -1px;
-}
-.snap-money {
-  font-size: 15px;
-  font-weight: 800;
-  color: #1a1a2e;
-  letter-spacing: -0.5px;
-}
-.snap-small-val {
-  font-size: 13px;
-  font-weight: 700;
-  color: #444;
-}
-.snap-sub-lbl {
-  font-size: 9px;
-  color: #aaa;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  margin-top: 1px;
-  margin-bottom: 4px;
-}
-.snap-divider {
-  height: 1px;
-  background: #f0f0f0;
-  margin: 6px 0;
-}
+.snap-col-mid { background: #fafafa; }
+.snap-col-label { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+.snap-col-date  { font-size: 9px; color: #aaa; margin-bottom: 8px; }
+.snap-big    { font-size: 30px; font-weight: 900; color: #1a1a2e; line-height: 1; letter-spacing: -1px; }
+.snap-money  { font-size: 15px; font-weight: 800; color: #1a1a2e; letter-spacing: -0.5px; }
+.snap-small-val { font-size: 13px; font-weight: 700; color: #444; }
+.snap-sub-lbl { font-size: 9px; color: #aaa; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; margin-top: 1px; margin-bottom: 4px; }
+.snap-divider { height: 1px; background: #f0f0f0; margin: 6px 0; }
 
-/* Today's orders inside snapshot */
-.snap-today-orders {
-  border-top: 1px solid #f0f0f0;
-  padding: 10px 14px 12px;
-}
-.snap-today-title {
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #888;
-  margin-bottom: 8px;
-}
+.snap-today-orders { border-top: 1px solid #f0f0f0; padding: 10px 14px 12px; }
+.snap-today-title  { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #888; margin-bottom: 8px; }
 .snap-order-row {
   display: flex;
   align-items: center;
@@ -346,71 +364,41 @@ body {
   border-bottom: 1px solid #f7f7f7;
 }
 .snap-order-row:last-of-type { border-bottom: none; }
-.snap-order-num {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #f0f0f0;
-  font-size: 10px;
-  font-weight: 700;
-  color: #666;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.snap-order-name {
-  flex: 1;
-  font-size: 12px;
-  font-weight: 600;
-  color: #1a1a2e;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.snap-order-time {
-  font-size: 10px;
-  color: #aaa;
-  white-space: nowrap;
-}
-.snap-order-val {
-  font-size: 12px;
-  font-weight: 700;
-  color: #1a1a2e;
-  white-space: nowrap;
-  min-width: 55px;
-  text-align: right;
-}
-.snap-order-total-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 0 0;
-  border-top: 1.5px solid #e0e0e0;
+.snap-order-num  { width: 18px; height: 18px; border-radius: 50%; background: #f0f0f0; font-size: 10px; font-weight: 700; color: #666; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.snap-order-name { flex: 1; font-size: 12px; font-weight: 600; color: #1a1a2e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.snap-order-time { font-size: 10px; color: #aaa; white-space: nowrap; }
+.snap-order-val  { font-size: 12px; font-weight: 700; color: #1a1a2e; white-space: nowrap; min-width: 55px; text-align: right; }
+.snap-order-total-row { display: flex; align-items: center; gap: 8px; padding: 7px 0 0; border-top: 1.5px solid #e0e0e0; margin-top: 4px; }
+.snap-empty { text-align: center; font-size: 12px; color: #bbb; padding: 10px 0; }
+.snap-footer { text-align: center; font-size: 9px; color: #ccc; padding: 8px; border-top: 1px solid #f5f5f5; background: #fafafa; }
+
+/* ── PROFIT ROW inside snap ── */
+.snap-profit-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  border-top: 1.5px solid #f0f0f0;
   margin-top: 4px;
 }
-.snap-empty {
+.snap-profit-cell {
   text-align: center;
-  font-size: 12px;
-  color: #bbb;
-  padding: 10px 0;
+  padding: 10px 8px;
+  border-right: 1px solid #f0f0f0;
 }
-.snap-footer {
-  text-align: center;
-  font-size: 9px;
-  color: #ccc;
-  padding: 8px;
-  border-top: 1px solid #f5f5f5;
-  background: #fafafa;
-}
+.snap-profit-cell:last-child { border-right: none; }
+.spc-label { font-size: 9px; color: #aaa; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
+.spc-val   { font-size: 14px; font-weight: 800; color: #1a1a2e; margin-top: 2px; }
+.spc-val.green { color: #16a34a; }
+.spc-val.red   { color: #dc2626; }
 
-/* ── FOOTER NOTE ── */
-.footer-note {
-  text-align: center;
-  font-size: 11px;
-  color: #bbb;
-  padding: 20px;
-}
+/* ── LOADING ── */
+.loading { text-align: center; padding: 60px 20px; color: #aaa; font-size: 14px; }
+.spinner { width: 28px; height: 28px; border: 3px solid #eee; border-top-color: #1a1a2e; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.empty-row { text-align: center; padding: 20px; color: #bbb; font-size: 13px; }
+
+/* ── FOOTER ── */
+.footer-note { text-align: center; font-size: 11px; color: #bbb; padding: 20px; }
 </style>
 </head>
 <body>
@@ -439,32 +427,17 @@ body {
 
 <!-- CONTENT -->
 <div id="content">
-  <div class="loading"><div class="spinner"></div>Fetching data from sheet…</div>
+  <div class="loading"><div class="spinner"></div>Fetching data from sheets…</div>
 </div>
 
 <div class="footer-note" id="footerNote"></div>
 
 <script>
 // ── CONFIG ──────────────────────────────────────────
-const SHEET_ID = '1LdJAHcoYX8ruxVEKG5j-X1KyaZohOLfhyYaUBmsVoyI';
-const GID      = '1633140334'; // Sheet2
+const SHEET_ID   = '1LdJAHcoYX8ruxVEKG5j-X1KyaZohOLfhyYaUBmsVoyI';
+const GID_ORDERS = '1633140334'; // Sheet2 - Orders
+const GID_CAMPS  = '566235125';  // Sheet3 - Campaign Spend
 
-// Column mapping (A to K)
-const COL = {
-  timestamp:  'Timestamp',    // A
-  orderId:    'Order ID',     // B
-  name:       'Name',         // C
-  phone:      'Phone',        // D
-  address:    'Address',      // E
-  mapLink:    'Map Link',     // F
-  product:    'Product',      // G
-  addons:     'Add-ons',      // H
-  prebook:    'Pre-Book',     // I
-  price:      'Price',        // J  (skip display)
-  orderTotal: 'Order Total',  // K
-};
-
-// Fiscal year start month (0 = Jan, 3 = Apr)
 const FY_START_MONTH = 3; // April
 
 // ── DATE HELPERS ────────────────────────────────────
@@ -474,174 +447,181 @@ today.setHours(0,0,0,0);
 function startOfDay(d) { const x=new Date(d); x.setHours(0,0,0,0); return x; }
 function endOfDay(d)   { const x=new Date(d); x.setHours(23,59,59,999); return x; }
 
-// Today
 const todayStart = startOfDay(today);
 const todayEnd   = endOfDay(today);
+const mtdStart   = new Date(today.getFullYear(), today.getMonth(), 1);
+const mtdEnd     = endOfDay(today);
 
-// Month to date: 1st of current month → today
-const mtdStart = new Date(today.getFullYear(), today.getMonth(), 1);
-const mtdEnd   = endOfDay(today);
-
-// Year to date: April 1st of current fiscal year → today
 function getFYStart() {
-  const yr  = today.getFullYear();
-  const mon = today.getMonth();
-  // If current month is before FY_START_MONTH, FY started previous year
-  const fyYear = mon < FY_START_MONTH ? yr - 1 : yr;
-  return new Date(fyYear, FY_START_MONTH, 1);
+  const yr=today.getFullYear(), mon=today.getMonth();
+  return new Date(mon < FY_START_MONTH ? yr-1 : yr, FY_START_MONTH, 1);
 }
 const ytdStart = getFYStart();
 const ytdEnd   = endOfDay(today);
 
-// Format date nicely
-function fmt(d) {
-  return d.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
-}
-function fmtShort(d) {
-  return d.toLocaleDateString('en-IN', { day:'2-digit', month:'short' });
-}
+function fmt(d)      { return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); }
+function fmtShort(d) { return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short'}); }
+function fmtMoney(n) { return '₹'+n.toLocaleString('en-IN',{maximumFractionDigits:0}); }
+function fmtTime(d)  { if(!d)return''; return d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true}); }
 
-// Update date banner
 document.getElementById('reportDate').textContent = fmt(today);
 document.getElementById('fyStart').textContent    = fmt(ytdStart);
 
-// ── FETCH ────────────────────────────────────────────
-function fetchSheet() {
+// ── GENERIC SHEET FETCHER ────────────────────────────
+function fetchSheetByGID(gid) {
   return new Promise((resolve, reject) => {
-    document.querySelectorAll('script[id^="mis_"]').forEach(s => s.remove());
-    Object.keys(window).filter(k => k.startsWith('__misCB_')).forEach(k => delete window[k]);
-
-    const cb    = '__misCB_' + Date.now();
-    const timer = setTimeout(() => { delete window[cb]; reject(new Error('Timeout')); }, 12000);
+    document.querySelectorAll(`script[id^="mis_${gid}"]`).forEach(s=>s.remove());
+    const cb = '__misCB_' + gid + '_' + Date.now();
+    const timer = setTimeout(()=>{ delete window[cb]; reject(new Error('Timeout')); }, 12000);
 
     window[cb] = function(data) {
       clearTimeout(timer);
       delete window[cb];
       try {
-        if (!data.table || !data.table.rows || !data.table.rows.length)
-          return reject(new Error('No data'));
-
-        const labels = (data.table.cols || []).map(c => (c.label||'').trim());
-        const fi = name => {
-          if (!name) return -1;
-          let i = labels.findIndex(c => c === name);
-          if (i >= 0) return i;
-          i = labels.findIndex(c => c.toLowerCase() === name.toLowerCase());
-          if (i >= 0) return i;
-          return labels.findIndex(c => c.toLowerCase().includes(name.toLowerCase()));
-        };
-
-        const iTs    = fi(COL.timestamp);
-        const iName  = fi(COL.name);
-        const iTotal = fi(COL.orderTotal);
-
-        const v  = (r,i) => (i>=0 && r.c[i] && r.c[i].v!=null) ? String(r.c[i].v).trim() : '';
-        const fv = (r,i) => (i>=0 && r.c[i]) ? (r.c[i].f || v(r,i)) : '';
-
-        // Parse timestamp → JS Date
-        const parseTs = (r, i) => {
-          if (i < 0 || !r.c[i] || r.c[i].v == null) return null;
-          const raw = r.c[i].v;
-          if (typeof raw === 'string' && raw.startsWith('Date(')) {
-            const p = raw.replace('Date(','').replace(')','').split(',');
-            return new Date(+p[0], +p[1], +p[2], +(p[3]||0), +(p[4]||0));
-          }
-          // Try parsing formatted value
-          if (r.c[i].f) {
-            const d = new Date(r.c[i].f);
-            if (!isNaN(d)) return d;
-          }
-          return null;
-        };
-
-        // Parse order total → number
-        const parseTotal = str => {
-          if (!str) return 0;
-          const n = parseFloat(str.replace(/[^0-9.]/g,''));
-          return isNaN(n) ? 0 : n;
-        };
-
-        const rows = data.table.rows.map((r, idx) => ({
-          name:  v(r, iName),
-          ts:    parseTs(r, iTs),
-          total: parseTotal(fv(r, iTotal) || v(r, iTotal)),
-        })).filter(o => o.name && o.name.length > 1 && o.ts);
-
-        resolve(rows);
+        if(!data.table) return reject(new Error('No table'));
+        resolve(data.table);
       } catch(e) { reject(e); }
     };
 
     const s   = document.createElement('script');
-    s.id      = 'mis_' + Date.now();
-    s.src     = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json;responseHandler:${cb}&gid=${GID}&v=${Date.now()}&r=${Math.random()}`;
-    s.onerror = () => { clearTimeout(timer); reject(new Error('Failed to load')); };
+    s.id      = `mis_${gid}_${Date.now()}`;
+    s.src     = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json;responseHandler:${cb}&gid=${gid}&v=${Date.now()}`;
+    s.onerror = ()=>{ clearTimeout(timer); reject(new Error('Load failed')); };
     document.head.appendChild(s);
   });
 }
 
-// ── FILTER HELPERS ───────────────────────────────────
-function inRange(o, start, end) {
-  if (!o.ts) return false;
-  return o.ts >= start && o.ts <= end;
+// ── PARSE ORDERS (Sheet2) ───────────────────────────
+function parseOrders(table) {
+  const labels = (table.cols||[]).map(c=>(c.label||'').trim());
+  const fi = name => {
+    let i = labels.findIndex(c=>c===name); if(i>=0)return i;
+    i = labels.findIndex(c=>c.toLowerCase()===name.toLowerCase()); if(i>=0)return i;
+    return labels.findIndex(c=>c.toLowerCase().includes(name.toLowerCase()));
+  };
+  const iTs    = fi('Timestamp');
+  const iName  = fi('Name');
+  const iTotal = fi('Order Total');
+
+  const v  = (r,i)=>(i>=0&&r.c[i]&&r.c[i].v!=null)?String(r.c[i].v).trim():'';
+  const fv = (r,i)=>(i>=0&&r.c[i])?(r.c[i].f||v(r,i)):'';
+
+  const parseTs = (r,i) => {
+    if(i<0||!r.c[i]||r.c[i].v==null) return null;
+    const raw=r.c[i].v;
+    if(typeof raw==='string'&&raw.startsWith('Date(')) {
+      const p=raw.replace('Date(','').replace(')','').split(',');
+      return new Date(+p[0],+p[1],+p[2],+(p[3]||0),+(p[4]||0));
+    }
+    if(r.c[i].f){ const d=new Date(r.c[i].f); if(!isNaN(d))return d; }
+    return null;
+  };
+  const parseTotal = str=>{ if(!str)return 0; const n=parseFloat(str.replace(/[^0-9.]/g,'')); return isNaN(n)?0:n; };
+
+  return (table.rows||[]).map(r=>({
+    name:  v(r,iName),
+    ts:    parseTs(r,iTs),
+    total: parseTotal(fv(r,iTotal)||v(r,iTotal)),
+  })).filter(o=>o.name&&o.name.length>1&&o.ts);
 }
 
-function sumTotal(list) {
-  return list.reduce((acc, o) => acc + o.total, 0);
+// ── PARSE CAMPAIGNS (Sheet3) ────────────────────────
+function parseCampaigns(table) {
+  const labels = (table.cols||[]).map(c=>(c.label||'').trim());
+  const fi = name => {
+    let i=labels.findIndex(c=>c===name); if(i>=0)return i;
+    i=labels.findIndex(c=>c.toLowerCase()===name.toLowerCase()); if(i>=0)return i;
+    return labels.findIndex(c=>c.toLowerCase().includes(name.toLowerCase()));
+  };
+  const iWeek     = fi('Week');
+  const iPlatform = fi('Campaign Platform');
+  const iAmount   = fi('Amount Spent');
+  const iNotes    = fi('Notes');
+
+  const v = (r,i)=>(i>=0&&r.c[i]&&r.c[i].v!=null)?String(r.c[i].v).trim():'';
+  const parseAmt = str=>{ if(!str)return 0; const n=parseFloat(str.replace(/[^0-9.]/g,'')); return isNaN(n)?0:n; };
+
+  return (table.rows||[]).map(r=>({
+    week:     v(r,iWeek),
+    platform: v(r,iPlatform),
+    amount:   parseAmt(v(r,iAmount)),
+    notes:    v(r,iNotes),
+  })).filter(c=>c.week&&c.amount>0);
 }
 
-function fmtMoney(n) {
-  return '₹' + n.toLocaleString('en-IN', { maximumFractionDigits: 0 });
-}
-
-function fmtTime(d) {
-  if (!d) return '';
-  return d.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', hour12:true });
-}
+// ── HELPERS ─────────────────────────────────────────
+function inRange(o, start, end) { if(!o.ts)return false; return o.ts>=start&&o.ts<=end; }
+function sumTotal(list) { return list.reduce((acc,o)=>acc+o.total,0); }
 
 // ── RENDER ───────────────────────────────────────────
-function renderMIS(allRows) {
-  const todayOrders = allRows.filter(o => inRange(o, todayStart, todayEnd));
-  const mtdOrders   = allRows.filter(o => inRange(o, mtdStart,   mtdEnd));
-  const ytdOrders   = allRows.filter(o => inRange(o, ytdStart,   ytdEnd));
+function renderMIS(allOrders, allCamps) {
+  const todayOrders = allOrders.filter(o=>inRange(o,todayStart,todayEnd));
+  const mtdOrders   = allOrders.filter(o=>inRange(o,mtdStart,mtdEnd));
+  const ytdOrders   = allOrders.filter(o=>inRange(o,ytdStart,ytdEnd));
 
   const todaySum = sumTotal(todayOrders);
   const mtdSum   = sumTotal(mtdOrders);
   const ytdSum   = sumTotal(ytdOrders);
 
-  // Latest order time today
+  const totalSpend = allCamps.reduce((a,c)=>a+c.amount, 0);
+  const mtdSpend   = allCamps.reduce((a,c)=>a+c.amount, 0); // all camps for now
+  const ytdProfit  = ytdSum - totalSpend;
+  const mtdProfit  = mtdSum - totalSpend;
+  const roi        = totalSpend > 0 ? ((ytdSum/totalSpend)*100).toFixed(0) : null;
+
   const latestOrder = todayOrders.length
-    ? todayOrders.slice().sort((a,b) => b.ts - a.ts)[0]
+    ? todayOrders.slice().sort((a,b)=>b.ts-a.ts)[0]
     : null;
+  const avgToday = todayOrders.length ? Math.round(todaySum/todayOrders.length) : 0;
+  const avgMtd   = mtdOrders.length   ? Math.round(mtdSum/mtdOrders.length) : 0;
 
-  // Avg order value today
-  const avgToday = todayOrders.length ? Math.round(todaySum / todayOrders.length) : 0;
-  const avgMtd   = mtdOrders.length   ? Math.round(mtdSum   / mtdOrders.length)   : 0;
+  const nowStr = new Date().toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true});
 
-  const nowStr = new Date().toLocaleString('en-IN', {
-    day:'2-digit', month:'short', year:'numeric',
-    hour:'2-digit', minute:'2-digit', hour12:true
-  });
+  // Platform badge
+  function platformBadge(p) {
+    const pl = (p||'').toLowerCase();
+    if(pl.includes('meta')||pl.includes('facebook')) return `<span class="camp-platform meta">Meta</span>`;
+    if(pl.includes('google')) return `<span class="camp-platform google">Google</span>`;
+    if(pl.includes('insta')) return `<span class="camp-platform insta">Instagram</span>`;
+    return `<span class="camp-platform">${p||'—'}</span>`;
+  }
 
   const html = `
 
-    <!-- ══════════════════════════════════════════ -->
-    <!--        OVERVIEW SNAPSHOT (screenshot)      -->
-    <!-- ══════════════════════════════════════════ -->
-    <div class="overview-snap" id="overviewSnap">
+    <!-- ══ TOP PROFIT STRIP ══ -->
+    <div class="profit-strip">
+      <div class="profit-strip-title">💰 Revenue · Spend · Profit — Quick View</div>
+      <div class="profit-3col">
+        <div class="profit-col">
+          <div class="profit-label">Total Revenue</div>
+          <div class="profit-value cyan">${fmtMoney(ytdSum)}</div>
+          <div class="profit-sub">YTD · ${ytdOrders.length} orders</div>
+        </div>
+        <div class="profit-col">
+          <div class="profit-label">Campaign Spend</div>
+          <div class="profit-value red">${fmtMoney(totalSpend)}</div>
+          <div class="profit-sub">${allCamps.length} campaigns</div>
+        </div>
+        <div class="profit-col">
+          <div class="profit-label">Net Profit</div>
+          <div class="profit-value ${ytdProfit>=0?'green':'red'}">${fmtMoney(Math.abs(ytdProfit))}</div>
+          ${roi ? `<div class="profit-badge ${ytdProfit>=0?'':'loss'}">${ytdProfit>=0?'▲':'▼'} ROI ${roi}%</div>` : ''}
+        </div>
+      </div>
+    </div>
 
-      <!-- Snap Header -->
+    <!-- ══ OVERVIEW SNAPSHOT ══ -->
+    <div class="overview-snap" id="overviewSnap">
       <div class="snap-header">
         <div class="snap-brand">🐟 TruSea Fish</div>
         <div class="snap-title">MIS Report</div>
         <div class="snap-time">${nowStr}</div>
       </div>
 
-      <!-- 3 Column Summary -->
       <div class="snap-grid">
-
         <div class="snap-col">
           <div class="snap-col-label">📦 Today</div>
-          <div class="snap-col-date">${fmt(today)}</div>
+          <div class="snap-col-date">${fmtShort(today)}</div>
           <div class="snap-big">${todayOrders.length}</div>
           <div class="snap-sub-lbl">Orders</div>
           <div class="snap-divider"></div>
@@ -650,10 +630,7 @@ function renderMIS(allRows) {
           <div class="snap-divider"></div>
           <div class="snap-small-val">${fmtMoney(avgToday)}</div>
           <div class="snap-sub-lbl">Avg / Order</div>
-          ${latestOrder ? `
-          <div class="snap-divider"></div>
-          <div class="snap-small-val">${fmtTime(latestOrder.ts)}</div>
-          <div class="snap-sub-lbl">Latest Order</div>` : ''}
+          ${latestOrder ? `<div class="snap-divider"></div><div class="snap-small-val">${fmtTime(latestOrder.ts)}</div><div class="snap-sub-lbl">Latest Order</div>` : ''}
         </div>
 
         <div class="snap-col snap-col-mid">
@@ -681,47 +658,59 @@ function renderMIS(allRows) {
           <div class="snap-money">${fmtMoney(ytdSum)}</div>
           <div class="snap-sub-lbl">Total Value</div>
           <div class="snap-divider"></div>
-          <div class="snap-small-val">${ytdOrders.length ? fmtMoney(Math.round(ytdSum/ytdOrders.length)) : '—'}</div>
+          <div class="snap-small-val">${ytdOrders.length?fmtMoney(Math.round(ytdSum/ytdOrders.length)):'—'}</div>
           <div class="snap-sub-lbl">Avg / Order</div>
           <div class="snap-divider"></div>
           <div class="snap-small-val">${Math.round((new Date()-ytdStart)/(1000*60*60*24))} days</div>
           <div class="snap-sub-lbl">Days Elapsed</div>
         </div>
-
       </div>
 
-      <!-- Today's customer list inside snapshot -->
+      <!-- Profit summary row inside snapshot -->
+      <div class="snap-profit-row">
+        <div class="snap-profit-cell">
+          <div class="spc-label">💸 Spend</div>
+          <div class="spc-val red">${fmtMoney(totalSpend)}</div>
+        </div>
+        <div class="snap-profit-cell">
+          <div class="spc-label">📈 Revenue</div>
+          <div class="spc-val">${fmtMoney(ytdSum)}</div>
+        </div>
+        <div class="snap-profit-cell">
+          <div class="spc-label">✅ Profit</div>
+          <div class="spc-val ${ytdProfit>=0?'green':'red'}">${fmtMoney(Math.abs(ytdProfit))}</div>
+        </div>
+      </div>
+
+      <!-- Today's orders -->
       <div class="snap-today-orders">
         <div class="snap-today-title">Today's Orders</div>
-        ${todayOrders.length === 0
+        ${todayOrders.length===0
           ? `<div class="snap-empty">No orders today yet</div>`
-          : todayOrders.slice().reverse().map((o, i) => `
+          : todayOrders.slice().reverse().map((o,i)=>`
             <div class="snap-order-row">
               <div class="snap-order-num">${i+1}</div>
               <div class="snap-order-name">${o.name}</div>
               <div class="snap-order-time">${fmtTime(o.ts)}</div>
-              <div class="snap-order-val">${o.total ? fmtMoney(o.total) : '—'}</div>
+              <div class="snap-order-val">${o.total?fmtMoney(o.total):'—'}</div>
             </div>`).join('')
         }
-        ${todayOrders.length > 0 ? `
+        ${todayOrders.length>0?`
         <div class="snap-order-total-row">
           <div style="flex:1;font-weight:700;font-size:12px">Total</div>
           <div class="snap-order-val" style="font-weight:800;color:#1a1a2e">${fmtMoney(todaySum)}</div>
-        </div>` : ''}
+        </div>`:''}
       </div>
 
       <div class="snap-footer">Powered by TruSea Fish · Auto-synced from Google Sheets</div>
     </div>
 
-    <!-- ── DETAILED SECTIONS BELOW ── -->
+    <!-- ══ TODAY ORDERS ══ -->
     <div class="section">
       <div class="section-title">Today</div>
       <div class="mis-card">
         <div class="mis-card-header">
-          <div>
-            <div class="mis-card-title">Daily Orders</div>
-            <div class="mis-card-range">${fmt(today)}</div>
-          </div>
+          <div><div class="mis-card-title">Daily Orders</div><div class="mis-card-range">${fmt(today)}</div></div>
           <div class="mis-card-icon">📦</div>
         </div>
         <div class="metrics">
@@ -736,98 +725,172 @@ function renderMIS(allRows) {
         </div>
         <div class="breakdown">
           <div class="breakdown-title">Order Breakdown</div>
-          ${todayOrders.length === 0
+          ${todayOrders.length===0
             ? `<div class="empty-row">No orders today yet</div>`
-            : todayOrders.slice().reverse().map(o => `
+            : todayOrders.slice().reverse().map(o=>`
               <div class="breakdown-row">
                 <div class="br-name">${o.name}</div>
                 <div class="br-time">${fmtTime(o.ts)}</div>
-                <div class="br-val">${o.total ? fmtMoney(o.total) : '—'}</div>
+                <div class="br-val">${o.total?fmtMoney(o.total):'—'}</div>
               </div>`).join('')
           }
         </div>
       </div>
     </div>
 
-    <!-- ── MTD ── -->
+    <!-- ══ MTD ══ -->
     <div class="section">
       <div class="section-title">Month to Date</div>
       <div class="mis-card">
         <div class="mis-card-header">
-          <div>
-            <div class="mis-card-title">Monthly Orders</div>
-            <div class="mis-card-range">${fmtShort(mtdStart)} – ${fmtShort(today)}</div>
-          </div>
+          <div><div class="mis-card-title">Monthly Orders</div><div class="mis-card-range">${fmtShort(mtdStart)} – ${fmtShort(today)}</div></div>
           <div class="mis-card-icon">📅</div>
         </div>
-        <div class="metrics">
+        <div class="metrics three">
           <div class="metric">
             <div class="metric-val">${mtdOrders.length}</div>
-            <div class="metric-lbl">Total Orders</div>
+            <div class="metric-lbl">Orders</div>
           </div>
           <div class="metric">
             <div class="metric-val money">${fmtMoney(mtdSum)}</div>
-            <div class="metric-lbl">Order Value</div>
+            <div class="metric-lbl">Revenue</div>
+          </div>
+          <div class="metric">
+            <div class="metric-val money ${mtdProfit>=0?'green':'red'}">${fmtMoney(Math.abs(mtdProfit))}</div>
+            <div class="metric-lbl">Net Profit</div>
           </div>
         </div>
         <div class="breakdown">
           <div class="breakdown-title">Daily Breakdown</div>
-          ${renderDailyBreakdown(mtdOrders, mtdStart, today)}
+          ${renderDailyBreakdown(mtdOrders,mtdStart,today)}
         </div>
       </div>
     </div>
 
-    <!-- ── YTD ── -->
+    <!-- ══ YTD ══ -->
     <div class="section">
       <div class="section-title">Year to Date</div>
       <div class="mis-card">
         <div class="mis-card-header">
-          <div>
-            <div class="mis-card-title">Yearly Orders</div>
-            <div class="mis-card-range">${fmtShort(ytdStart)} – ${fmtShort(today)}</div>
-          </div>
+          <div><div class="mis-card-title">Yearly Orders</div><div class="mis-card-range">${fmtShort(ytdStart)} – ${fmtShort(today)}</div></div>
           <div class="mis-card-icon">📊</div>
         </div>
-        <div class="metrics">
+        <div class="metrics three">
           <div class="metric">
             <div class="metric-val">${ytdOrders.length}</div>
-            <div class="metric-lbl">Total Orders</div>
+            <div class="metric-lbl">Orders</div>
           </div>
           <div class="metric">
             <div class="metric-val money">${fmtMoney(ytdSum)}</div>
-            <div class="metric-lbl">Order Value</div>
+            <div class="metric-lbl">Revenue</div>
+          </div>
+          <div class="metric">
+            <div class="metric-val money ${ytdProfit>=0?'green':'red'}">${fmtMoney(Math.abs(ytdProfit))}</div>
+            <div class="metric-lbl">Net Profit</div>
           </div>
         </div>
         <div class="breakdown">
           <div class="breakdown-title">Monthly Breakdown</div>
-          ${renderMonthlyBreakdown(ytdOrders, ytdStart, today)}
+          ${renderMonthlyBreakdown(ytdOrders,ytdStart,today)}
         </div>
       </div>
     </div>
+
+    <!-- ══ CAMPAIGN SPEND ══ -->
+    <div class="section">
+      <div class="section-title">Campaign Spend</div>
+      <div class="mis-card">
+        <div class="mis-card-header">
+          <div><div class="mis-card-title">Ads & Marketing</div><div class="mis-card-range">All campaigns</div></div>
+          <div class="mis-card-icon">📣</div>
+        </div>
+        <div class="metrics three">
+          <div class="metric">
+            <div class="metric-val">${allCamps.length}</div>
+            <div class="metric-lbl">Campaigns</div>
+          </div>
+          <div class="metric">
+            <div class="metric-val money red">${fmtMoney(totalSpend)}</div>
+            <div class="metric-lbl">Total Spend</div>
+          </div>
+          <div class="metric">
+            <div class="metric-val money">${roi ? roi+'%' : '—'}</div>
+            <div class="metric-lbl">Revenue ROI</div>
+          </div>
+        </div>
+        <div class="breakdown">
+          <div class="breakdown-title">Campaign Breakdown</div>
+          ${allCamps.length===0
+            ? `<div class="empty-row">No campaigns added yet</div>`
+            : allCamps.map(c=>`
+              <div class="campaign-row">
+                ${platformBadge(c.platform)}
+                <div style="flex:1">
+                  <div class="camp-week">${c.week}</div>
+                  ${c.notes?`<div class="camp-notes">${c.notes}</div>`:''}
+                </div>
+                <div class="camp-amount">- ${fmtMoney(c.amount)}</div>
+              </div>`).join('')
+          }
+          ${allCamps.length>0?`
+          <div class="breakdown-row" style="margin-top:6px;border-top:1.5px solid #e0e0e0;padding-top:10px">
+            <div class="br-name" style="font-weight:700">Total Spent</div>
+            <div class="br-val red">- ${fmtMoney(totalSpend)}</div>
+          </div>`:''}
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PROFIT & LOSS ══ -->
+    <div class="section">
+      <div class="section-title">Profit & Loss</div>
+      <div class="mis-card">
+        <div class="mis-card-header">
+          <div><div class="mis-card-title">Revenue vs Spend</div><div class="mis-card-range">Year to Date</div></div>
+          <div class="mis-card-icon">💹</div>
+        </div>
+        <div class="breakdown">
+          <div class="breakdown-row" style="padding:12px 0">
+            <div class="br-name">📈 Total Revenue (YTD)</div>
+            <div class="br-val">${fmtMoney(ytdSum)}</div>
+          </div>
+          <div class="breakdown-row" style="padding:12px 0">
+            <div class="br-name">📣 Total Campaign Spend</div>
+            <div class="br-val red">- ${fmtMoney(totalSpend)}</div>
+          </div>
+          <div class="breakdown-row" style="padding:14px 0;border-top:2px solid #1a1a2e;margin-top:4px">
+            <div class="br-name" style="font-size:15px;font-weight:800">${ytdProfit>=0?'✅ Net Profit':'❌ Net Loss'}</div>
+            <div class="br-val ${ytdProfit>=0?'green':'red'}" style="font-size:17px">${fmtMoney(Math.abs(ytdProfit))}</div>
+          </div>
+          ${roi?`
+          <div style="padding:10px 0;text-align:center">
+            <span class="roi-pill ${ytdProfit>=0?'good':'bad'}">
+              ${ytdProfit>=0?'▲':'▼'} ROI: Every ₹1 spent → ₹${(ytdSum/totalSpend).toFixed(2)} revenue
+            </span>
+          </div>`:''}
+        </div>
+      </div>
+    </div>
+
   `;
 
   document.getElementById('content').innerHTML = html;
   document.getElementById('footerNote').textContent =
-    `Data from Google Sheets · ${allRows.length} total records · Last sync: ${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}`;
+    `Orders: ${allOrders.length} records · Campaigns: ${allCamps.length} entries · Last sync: ${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}`;
 }
 
-// Daily breakdown for MTD (one row per day)
+// ── DAILY BREAKDOWN ─────────────────────────────────
 function renderDailyBreakdown(orders, start, end) {
-  if (!orders.length) return `<div class="empty-row">No orders this month yet</div>`;
-
-  const days = [];
-  const cur = new Date(start);
-  while (cur <= end) {
-    const dayStart = startOfDay(cur);
-    const dayEnd   = endOfDay(cur);
-    const dayOrders = orders.filter(o => inRange(o, dayStart, dayEnd));
-    if (dayOrders.length > 0) {
-      days.push({ date: new Date(cur), count: dayOrders.length, total: sumTotal(dayOrders) });
-    }
-    cur.setDate(cur.getDate() + 1);
+  if(!orders.length) return `<div class="empty-row">No orders this month yet</div>`;
+  const days=[];
+  const cur=new Date(start);
+  while(cur<=end){
+    const ds=startOfDay(cur), de=endOfDay(cur);
+    const dayOrders=orders.filter(o=>inRange(o,ds,de));
+    if(dayOrders.length>0) days.push({date:new Date(cur),count:dayOrders.length,total:sumTotal(dayOrders)});
+    cur.setDate(cur.getDate()+1);
   }
-
-  return days.slice().reverse().map(d => `
+  return days.slice().reverse().map(d=>`
     <div class="breakdown-row">
       <div class="br-name">${d.date.toLocaleDateString('en-IN',{weekday:'short',day:'2-digit',month:'short'})}</div>
       <div class="br-time">${d.count} order${d.count>1?'s':''}</div>
@@ -835,25 +898,19 @@ function renderDailyBreakdown(orders, start, end) {
     </div>`).join('');
 }
 
-// Monthly breakdown for YTD (one row per month)
+// ── MONTHLY BREAKDOWN ────────────────────────────────
 function renderMonthlyBreakdown(orders, start, end) {
-  if (!orders.length) return `<div class="empty-row">No orders this year yet</div>`;
-
-  const months = [];
-  const cur = new Date(start.getFullYear(), start.getMonth(), 1);
-  while (cur <= end) {
-    const mStart = new Date(cur.getFullYear(), cur.getMonth(), 1);
-    const mEnd   = new Date(cur.getFullYear(), cur.getMonth()+1, 0, 23, 59, 59);
-    const mOrders = orders.filter(o => inRange(o, mStart, mEnd));
-    months.push({
-      label:  cur.toLocaleDateString('en-IN',{month:'long',year:'numeric'}),
-      count:  mOrders.length,
-      total:  sumTotal(mOrders),
-    });
-    cur.setMonth(cur.getMonth() + 1);
+  if(!orders.length) return `<div class="empty-row">No orders this year yet</div>`;
+  const months=[];
+  const cur=new Date(start.getFullYear(),start.getMonth(),1);
+  while(cur<=end){
+    const mS=new Date(cur.getFullYear(),cur.getMonth(),1);
+    const mE=new Date(cur.getFullYear(),cur.getMonth()+1,0,23,59,59);
+    const mOrders=orders.filter(o=>inRange(o,mS,mE));
+    months.push({label:cur.toLocaleDateString('en-IN',{month:'long',year:'numeric'}),count:mOrders.length,total:sumTotal(mOrders)});
+    cur.setMonth(cur.getMonth()+1);
   }
-
-  return months.slice().reverse().map(m => `
+  return months.slice().reverse().map(m=>`
     <div class="breakdown-row">
       <div class="br-name">${m.label}</div>
       <div class="br-time">${m.count} order${m.count>1?'s':''}</div>
@@ -867,18 +924,22 @@ async function init() {
   document.getElementById('content').innerHTML =
     '<div class="loading"><div class="spinner"></div>Fetching data…</div>';
   try {
-    const rows = await fetchSheet();
-    renderMIS(rows);
+    const [ordersTable, campsTable] = await Promise.all([
+      fetchSheetByGID(GID_ORDERS),
+      fetchSheetByGID(GID_CAMPS),
+    ]);
+    const orders = parseOrders(ordersTable);
+    const camps  = parseCampaigns(campsTable);
+    renderMIS(orders, camps);
     document.getElementById('syncInfo').textContent =
       `✓ Synced · ${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}`;
   } catch(e) {
-    document.getElementById('syncInfo').textContent = '⚠ Could not connect to sheet';
+    document.getElementById('syncInfo').textContent = '⚠ Could not connect';
     document.getElementById('content').innerHTML =
       `<div class="loading">⚠ ${e.message}<br><br>Make sure sheet is shared as<br>"Anyone with the link → Viewer"</div>`;
   }
 }
 
-// Auto sync every 10 minutes
 init();
 setInterval(init, 10 * 60 * 1000);
 </script>
