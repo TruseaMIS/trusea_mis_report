@@ -499,9 +499,10 @@ function parseOrders(table) {
     i = labels.findIndex(c=>c.toLowerCase()===name.toLowerCase()); if(i>=0)return i;
     return labels.findIndex(c=>c.toLowerCase().includes(name.toLowerCase()));
   };
-  const iTs    = fi('Timestamp');
-  const iName  = fi('Name');
-  const iTotal = fi('Order Total');
+  const iTs     = fi('Timestamp');
+  const iName   = fi('Name');
+  const iTotal  = fi('Order Total');
+  const iReport = fi('Product Report'); // Col L
 
   const v  = (r,i)=>(i>=0&&r.c[i]&&r.c[i].v!=null)?String(r.c[i].v).trim():'';
   const fv = (r,i)=>(i>=0&&r.c[i])?(r.c[i].f||v(r,i)):'';
@@ -519,10 +520,45 @@ function parseOrders(table) {
   const parseTotal = str=>{ if(!str)return 0; const n=parseFloat(str.replace(/[^0-9.]/g,'')); return isNaN(n)?0:n; };
 
   return (table.rows||[]).map(r=>({
-    name:  v(r,iName),
-    ts:    parseTs(r,iTs),
-    total: parseTotal(fv(r,iTotal)||v(r,iTotal)),
+    name:          v(r,iName),
+    ts:            parseTs(r,iTs),
+    total:         parseTotal(fv(r,iTotal)||v(r,iTotal)),
+    productReport: v(r,iReport), // "Seer – Small Slices - 1kg ×2 | Baracuda – Medium Slices - 500g"
   })).filter(o=>o.name&&o.name.length>1&&o.ts);
+}
+
+// Parse "Seer – Small Slices - 1kg ×2 | Baracuda – Medium Slices - 500g"
+// → [{key, name, size, qty}, ...]
+function parseProductReport(reportStr) {
+  if(!reportStr) return [];
+  return reportStr.split('|').map(seg=>{
+    seg = seg.trim(); if(!seg) return null;
+    const qtyMatch = seg.match(/×(\d+)\s*$/);
+    const qty = qtyMatch ? parseInt(qtyMatch[1]) : 1;
+    const key = seg.replace(/\s*×\d+\s*$/,'').trim();
+    const sizeMatch = key.match(/[-–]\s*(\d+(?:\.\d+)?(?:g|kg))\s*$/i);
+    const size = sizeMatch ? sizeMatch[1].toLowerCase() : '';
+    const namePart = key.split(/\s*[–-]\s*/)[0].trim();
+    return { key, qty, size, name: namePart };
+  }).filter(Boolean);
+}
+
+// Aggregate fish sold across a set of orders
+function buildFishReport(orders) {
+  const map = {};
+  orders.forEach(o=>{
+    if(!o.productReport) return;
+    parseProductReport(o.productReport).forEach(item=>{
+      if(!map[item.key]) map[item.key] = { key:item.key, name:item.name, size:item.size, totalQty:0, totalKg:0 };
+      map[item.key].totalQty += item.qty;
+      const kg = item.size.endsWith('kg')
+        ? parseFloat(item.size)*item.qty
+        : item.size.endsWith('g')
+          ? (parseFloat(item.size)/1000)*item.qty : 0;
+      map[item.key].totalKg += kg;
+    });
+  });
+  return Object.values(map).sort((a,b)=>b.totalQty-a.totalQty);
 }
 
 // ── PARSE CAMPAIGNS (Sheet3) ────────────────────────
@@ -705,6 +741,37 @@ function renderMIS(allOrders, allCamps) {
       <div class="snap-footer">Powered by TruSea Fish · Auto-synced from Google Sheets</div>
     </div>
 
+    <!-- ══ FISH SOLD REPORT ══ -->
+    <div class="section">
+      <div class="section-title">🐟 Fish Sold — Product Report</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px">
+        <button class="tab-btn active" id="ftab_mtd" onclick="showFishTab('mtd')">This Month</button>
+        <button class="tab-btn" id="ftab_today" onclick="showFishTab('today')">Today</button>
+        <button class="tab-btn" id="ftab_ytd" onclick="showFishTab('ytd')">Year to Date</button>
+      </div>
+      <div id="fish_mtd" class="mis-card">
+        <div class="mis-card-header">
+          <div><div class="mis-card-title">Monthly Fish Sales</div><div class="mis-card-range">${fmtShort(mtdStart)} – ${fmtShort(today)}</div></div>
+          <div class="mis-card-icon">📊</div>
+        </div>
+        ${renderFishTable(buildFishReport(mtdOrders))}
+      </div>
+      <div id="fish_today" class="mis-card" style="display:none">
+        <div class="mis-card-header">
+          <div><div class="mis-card-title">Today's Fish Sales</div><div class="mis-card-range">${fmt(today)}</div></div>
+          <div class="mis-card-icon">📦</div>
+        </div>
+        ${renderFishTable(buildFishReport(todayOrders))}
+      </div>
+      <div id="fish_ytd" class="mis-card" style="display:none">
+        <div class="mis-card-header">
+          <div><div class="mis-card-title">Yearly Fish Sales</div><div class="mis-card-range">${fmtShort(ytdStart)} – ${fmtShort(today)}</div></div>
+          <div class="mis-card-icon">📈</div>
+        </div>
+        ${renderFishTable(buildFishReport(ytdOrders))}
+      </div>
+    </div>
+
     <!-- ══ TODAY ORDERS ══ -->
     <div class="section">
       <div class="section-title">Today</div>
@@ -877,6 +944,56 @@ function renderMIS(allOrders, allCamps) {
   document.getElementById('content').innerHTML = html;
   document.getElementById('footerNote').textContent =
     `Orders: ${allOrders.length} records · Campaigns: ${allCamps.length} entries · Last sync: ${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}`;
+}
+
+// ── FISH TABLE RENDER ────────────────────────────────
+function renderFishTable(fishList) {
+  if(!fishList.length) return `<div class="empty-row">No product report data yet.<br><span style="font-size:11px;color:#bbb">Run Apps Script → generateAll() to fill Column L</span></div>`;
+
+  const totalQty = fishList.reduce((a,f)=>a+f.totalQty,0);
+  const totalKg  = fishList.reduce((a,f)=>a+f.totalKg,0);
+
+  const rows = fishList.map(f => {
+    const pct = totalQty > 0 ? Math.round((f.totalQty/totalQty)*100) : 0;
+    const kgStr = f.totalKg > 0 ? f.totalKg.toFixed(2)+'kg' : '—';
+    return `
+      <div class="breakdown-row" style="flex-direction:column;align-items:stretch;gap:4px;padding:10px 0">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+          <div class="br-name" style="font-size:12px;font-weight:600">${f.key}</div>
+          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+            <span style="font-size:11px;color:#888">${kgStr}</span>
+            <span class="br-val" style="min-width:28px;text-align:right">${f.totalQty} qty</span>
+          </div>
+        </div>
+        <div style="height:5px;background:#f0f0f0;border-radius:10px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#1a1a2e,#0f3460);border-radius:10px;transition:width 0.4s"></div>
+        </div>
+        <div style="font-size:9px;color:#bbb;text-align:right">${pct}% of total</div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="breakdown">
+      <div class="breakdown-title">Fish · Variant · Size → Qty sold</div>
+      ${rows}
+      <div class="breakdown-row" style="border-top:1.5px solid #e0e0e0;margin-top:6px;padding-top:10px">
+        <div class="br-name" style="font-weight:700">Total</div>
+        <div style="display:flex;gap:12px;align-items:center">
+          <span style="font-size:12px;color:#666">${totalKg.toFixed(2)}kg</span>
+          <span class="br-val">${totalQty} qty</span>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── FISH TAB SWITCHER ────────────────────────────────
+function showFishTab(tab) {
+  ['mtd','today','ytd'].forEach(t => {
+    const el = document.getElementById('fish_'+t);
+    const btn = document.getElementById('ftab_'+t);
+    if(el)  el.style.display  = t===tab ? '' : 'none';
+    if(btn) btn.classList.toggle('active', t===tab);
+  });
 }
 
 // ── DAILY BREAKDOWN ─────────────────────────────────
