@@ -1084,17 +1084,44 @@ function renderMonthArchive(allOrders, allCamps) {
       </div>`;
   }).join('');
 
-  // Fish detail rows
+  // Fish detail rows — clearly show fish name, size, qty, weight, est value
   const avgPerKg = totalKg > 0 ? archRev / totalKg : 0;
   const fishRows = fish.length
-    ? fish.map(f => `
-        <div class="archive-fish-item">
-          <div class="afi-name">${f.key}</div>
-          <div class="afi-qty">${f.totalQty} qty</div>
-          <div class="afi-kg">${f.totalKg.toFixed(2)} kg</div>
-          <div class="afi-val">${fmtMoney(Math.round(f.totalKg * avgPerKg))}</div>
-        </div>`).join('')
-    : `<div class="empty-row">No fish data — ensure Column O (Fish Sold) is filled</div>`;
+    ? fish.map((f, i) => {
+        const pct = totalQty > 0 ? Math.round(f.totalQty / totalQty * 100) : 0;
+        const kgStr = f.totalKg > 0 ? f.totalKg.toFixed(2) + ' kg' : '—';
+        const estVal = f.totalKg > 0 ? fmtMoney(Math.round(f.totalKg * avgPerKg)) : '—';
+        // Split key into fish name part and size/variant part
+        // key format: "Seer - Vanjaram – Small Slices - 1kg"
+        const dashIdx = f.key.lastIndexOf(' - ');
+        const fishDisplay = dashIdx > 0 ? f.key.slice(0, dashIdx).trim() : f.key;
+        const sizeDisplay = f.size || (dashIdx > 0 ? f.key.slice(dashIdx + 3).trim() : '—');
+        return `
+        <div style="padding:10px 0;border-bottom:1px solid #f5f5f5">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:5px">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:700;color:#1a1a2e;line-height:1.3">${fishDisplay}</div>
+              <div style="font-size:11px;color:#0077b6;font-weight:600;margin-top:2px">${sizeDisplay}</div>
+            </div>
+            <div style="flex-shrink:0;text-align:right">
+              <div style="font-size:18px;font-weight:900;color:#1a1a2e;line-height:1">${f.totalQty}</div>
+              <div style="font-size:10px;color:#888;font-weight:600;text-transform:uppercase">qty sold</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="flex:1;height:5px;background:#f0f0f0;border-radius:10px;overflow:hidden">
+              <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#1a1a2e,#0f3460);border-radius:10px"></div>
+            </div>
+            <span style="font-size:11px;color:#16a34a;font-weight:700;white-space:nowrap">${kgStr}</span>
+            <span style="font-size:11px;color:#888;font-weight:600;white-space:nowrap">${estVal}</span>
+            <span style="font-size:10px;color:#bbb;white-space:nowrap">${pct}%</span>
+          </div>
+        </div>`;
+      }).join('')
+    : `<div class="empty-row" style="padding:20px">
+        No fish data found<br>
+        <span style="font-size:11px;color:#bbb">Make sure Column O (Fish Sold) has data in Sheet2</span>
+      </div>`;
 
   return `
     <div id="archiveContent">
@@ -1155,26 +1182,56 @@ function renderMonthArchive(allOrders, allCamps) {
 
       <div class="mis-card">
         <div class="mis-card-header">
-          <div><div class="mis-card-title">🐟 Fish Sold — ${monthLabel}</div>
-          <div class="mis-card-range">${totalQty} items · ${totalKg.toFixed(2)} kg · from Col O</div></div>
+          <div>
+            <div class="mis-card-title">🐟 Fish Sold — ${monthLabel}</div>
+            <div class="mis-card-range">${fish.length} varieties · ${totalQty} qty · ${totalKg.toFixed(2)} kg</div>
+          </div>
           <div class="mis-card-icon">🐟</div>
         </div>
-        <div class="breakdown">
-          <div style="display:grid;grid-template-columns:1fr auto auto auto;gap:6px;padding:6px 0;border-bottom:1px solid #f0f0f0;margin-bottom:4px">
-            <div style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase">Fish / Variant</div>
-            <div style="font-size:10px;font-weight:700;color:#888;text-align:right">Qty</div>
-            <div style="font-size:10px;font-weight:700;color:#888;text-align:right">Weight</div>
-            <div style="font-size:10px;font-weight:700;color:#888;text-align:right">Est. Value</div>
+
+        <!-- Summary strip -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:#f0f0f0;border-bottom:1px solid #f0f0f0">
+          <div style="background:#fff;padding:10px 8px;text-align:center">
+            <div style="font-size:20px;font-weight:800;color:#1a1a2e">${fish.length}</div>
+            <div style="font-size:10px;color:#888;font-weight:600;text-transform:uppercase">Varieties</div>
           </div>
-          ${fishRows}
-          ${fish.length ? `
-          <div class="archive-fish-item" style="border-top:2px solid #1a1a2e;margin-top:6px;padding-top:10px">
-            <div class="afi-name" style="font-weight:800">Total</div>
-            <div class="afi-qty" style="font-weight:800">${totalQty} qty</div>
-            <div class="afi-kg" style="font-weight:800">${totalKg.toFixed(2)} kg</div>
-            <div class="afi-val" style="font-weight:800">${fmtMoney(archRev)}</div>
-          </div>` : ''}
+          <div style="background:#fff;padding:10px 8px;text-align:center">
+            <div style="font-size:20px;font-weight:800;color:#1a1a2e">${totalQty}</div>
+            <div style="font-size:10px;color:#888;font-weight:600;text-transform:uppercase">Total Qty</div>
+          </div>
+          <div style="background:#fff;padding:10px 8px;text-align:center">
+            <div style="font-size:16px;font-weight:800;color:#1a1a2e">${totalKg.toFixed(2)} kg</div>
+            <div style="font-size:10px;color:#888;font-weight:600;text-transform:uppercase">Total Weight</div>
+          </div>
         </div>
+
+        <!-- Column headers -->
+        <div style="display:flex;justify-content:space-between;padding:6px 14px;background:#fafafa;border-bottom:1px solid #f0f0f0">
+          <div style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase">Fish Name · Size</div>
+          <div style="display:flex;gap:20px">
+            <div style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;text-align:right">Weight</div>
+            <div style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;text-align:right">Value</div>
+            <div style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;text-align:right;min-width:32px">%</div>
+          </div>
+        </div>
+
+        <!-- Fish rows -->
+        <div style="padding:0 14px">
+          ${fishRows}
+        </div>
+
+        <!-- Grand total footer -->
+        ${fish.length ? `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#1a1a2e;border-radius:0 0 12px 12px">
+          <div>
+            <div style="font-size:13px;font-weight:800;color:#fff">Grand Total</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.5)">${fish.length} fish varieties</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:20px;font-weight:900;color:#90e0ef">${totalQty} qty</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.7)">${totalKg.toFixed(2)} kg · ${fmtMoney(archRev)}</div>
+          </div>
+        </div>` : ''}
       </div>
 
     </div>
@@ -1970,6 +2027,8 @@ async function init() {
     renderMIS(orders, camps);
     setArchiveTabName();
     buildMonthFishChips(orders);
+    buildDayFishChips(orders);
+    buildPremiumCustomerCard(orders);
     document.getElementById('syncInfo').textContent =
       `✓ Synced · ${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}`;
   } catch(e) {
