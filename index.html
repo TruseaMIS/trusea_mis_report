@@ -1006,28 +1006,9 @@ function renderMonthArchive(allOrders, allCamps) {
   const archSpend  = allCamps.reduce((a, c) => a + c.amount, 0);
   const archProfit = archRev - archSpend;
 
-  // Use Col O (fishSold) if available, fallback to productReport
-  function getFishData(o) {
-    return o.fishSold || o.productReport || '';
-  }
-
-  // Build fish report from archive orders using fishSold column
+  // Same logic as Fish Report tab — use productReport (Col L) only
   function buildArchiveFishReport(orders) {
-    const map = {};
-    orders.forEach(o => {
-      const raw = getFishData(o);
-      if (!raw) return;
-      parseProductReport(raw).forEach(item => {
-        if (!map[item.key]) map[item.key] = { key:item.key, totalQty:0, totalKg:0 };
-        map[item.key].totalQty += item.qty;
-        const kg = item.size.endsWith('kg')
-          ? parseFloat(item.size) * item.qty
-          : item.size.endsWith('g')
-            ? (parseFloat(item.size)/1000) * item.qty : 0;
-        map[item.key].totalKg += kg;
-      });
-    });
-    return Object.values(map).sort((a,b) => b.totalQty - a.totalQty);
+    return buildFishReport(orders); // reuse existing buildFishReport which uses productReport
   }
 
   const fish     = buildArchiveFishReport(archOrders);
@@ -1120,7 +1101,7 @@ function renderMonthArchive(allOrders, allCamps) {
       }).join('')
     : `<div class="empty-row" style="padding:20px">
         No fish data found<br>
-        <span style="font-size:11px;color:#bbb">Make sure Column O (Fish Sold) has data in Sheet2</span>
+        <span style="font-size:11px;color:#bbb">Make sure Column L (Product Report) has data — run Apps Script generateAll()</span>
       </div>`;
 
   return `
