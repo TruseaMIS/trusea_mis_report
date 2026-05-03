@@ -932,59 +932,90 @@ function renderWeeklyFishSection(allOrders, ytdStart, ytdEnd) {
 
 // ── RENDER CUSTOMER REPORT ────────────────────────────
 function renderCustomerReport(allOrders) {
-  // Group by name + phone (deduplication key)
-  const custMap = {};
-  allOrders.forEach(o => {
-    const key = (o.name.toLowerCase().trim()) + '||' + (o.phone||'').replace(/\s/g,'');
-    if (!custMap[key]) custMap[key] = { name: o.name, phone: o.phone||'—', orders: [], totalSpend: 0 };
-    custMap[key].orders.push(o);
-    custMap[key].totalSpend += o.total;
-  });
+  const custMap = buildCustMap(allOrders);
+  const custs   = Object.values(custMap)
+    .sort((a, b) => b.totalSpend - a.totalSpend || b.orders.length - a.orders.length);
 
-  const custs = Object.values(custMap).sort((a,b) => b.totalSpend - a.totalSpend);
   if (!custs.length) return `<div class="empty-row">No customer data</div>`;
 
-  const rows = custs.map(c => {
-    const useDate = o => o.deliveryDate || o.ts;
-    const orderList = c.orders.slice().sort((a,b) => useDate(b) - useDate(a)).map(o => {
-      const d = useDate(o);
-      const fish = o.productReport
-        ? o.productReport.split('|').map(s=>s.trim().replace(/\s*×\d+\s*$/,'')).join(', ')
-        : '—';
-      return `<div class="cust-order-row">
-        <span style="color:#888;font-size:10px">${fmtShort(d)}</span>
-        · <span>${fish.slice(0,60)}${fish.length>60?'…':''}</span>
-        · <span style="font-weight:700">${fmtMoney(o.total)}</span>
-      </div>`;
+  // All unique months
+  const monthSet = {};
+  allOrders.forEach(o => {
+    const d = o.deliveredDate || o.ts;
+    if (!d) return;
+    const k = d.getFullYear() + '-' + String(d.getMonth()).padStart(2,'0');
+    if (!monthSet[k]) monthSet[k] = {
+      key:k, year:d.getFullYear(), month:d.getMonth(),
+      label: d.toLocaleDateString('en-IN',{month:'short',year:'numeric'})
+    };
+  });
+  const months = Object.values(monthSet).sort((a,b)=>a.key.localeCompare(b.key));
+
+  const rows = custs.map((c, i) => {
+    const monthCols = months.map(m => {
+      const mStart  = new Date(m.year, m.month, 1);
+      const mEnd    = new Date(m.year, m.month+1, 0, 23, 59, 59);
+      const mOrders = c.orders.filter(o => {
+        const d = o.deliveredDate || o.ts;
+        return d && d >= mStart && d <= mEnd;
+      });
+      if (!mOrders.length) return `<td style="text-align:center;color:#ddd;font-size:11px">—</td>`;
+      return `<td style="text-align:center;vertical-align:top;padding:7px 6px">
+        <div style="font-size:13px;font-weight:800;color:#1a1a2e">${mOrders.length}</div>
+        <div style="font-size:10px;color:#0077b6;font-weight:600">${fmtMoney(sumTotal(mOrders))}</div>
+      </td>`;
     }).join('');
 
-    return `
-      <tr>
-        <td>
-          <div class="cust-name-cell">${c.name}</div>
-          <div class="cust-phone-cell">📞 ${c.phone}</div>
-        </td>
-        <td style="text-align:center;font-size:13px;font-weight:800">${c.orders.length}</td>
-        <td style="text-align:right;font-size:13px;font-weight:800;white-space:nowrap">${fmtMoney(c.totalSpend)}</td>
-        <td>
-          <div class="cust-orders-list">${orderList}</div>
-        </td>
-      </tr>`;
+    return `<tr>
+      <td style="text-align:center;font-size:11px;color:#888;font-weight:600;padding:8px 6px">${i+1}</td>
+      <td style="padding:8px 10px">
+        <div style="font-size:13px;font-weight:700;color:#1a1a2e">${c.name}</div>
+        ${c.aliases.length ? `<div style="font-size:10px;color:#bbb">${c.aliases.join(', ')}</div>` : ''}
+        <div style="font-size:11px;color:#888">📞 ${c.phone}</div>
+      </td>
+      <td style="text-align:center;font-size:14px;font-weight:800;color:#1a1a2e;padding:8px 6px">${c.orders.length}</td>
+      <td style="text-align:right;font-size:13px;font-weight:800;color:#1a1a2e;white-space:nowrap;padding:8px 10px">${fmtMoney(c.totalSpend)}</td>
+      ${monthCols}
+    </tr>`;
+  }).join('');
+
+  // Grand total footer
+  const grandOrders = custs.reduce((a,c)=>a+c.orders.length,0);
+  const grandValue  = custs.reduce((a,c)=>a+c.totalSpend,0);
+  const monthTotals = months.map(m => {
+    const mStart = new Date(m.year, m.month, 1);
+    const mEnd   = new Date(m.year, m.month+1, 0, 23, 59, 59);
+    const mOrds  = allOrders.filter(o=>{const d=o.deliveredDate||o.ts;return d&&d>=mStart&&d<=mEnd;});
+    return `<td style="text-align:center;background:#f5f5f5;padding:8px 6px">
+      <div style="font-size:12px;font-weight:800;color:#1a1a2e">${mOrds.length}</div>
+      <div style="font-size:10px;color:#0077b6;font-weight:700">${fmtMoney(sumTotal(mOrds))}</div>
+    </td>`;
   }).join('');
 
   return `
-    <div style="overflow-x:auto">
-      <table class="cust-table">
-        <thead>
-          <tr>
-            <th>Customer</th>
-            <th style="text-align:center">Orders</th>
-            <th style="text-align:right">Total Spent</th>
-            <th>Order History (Fish Purchased)</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
+    <div id="customerTableContent">
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:520px">
+          <thead>
+            <tr style="background:#1a1a2e;-webkit-print-color-adjust:exact;print-color-adjust:exact">
+              <th style="padding:10px 6px;color:#90e0ef;font-size:10px;text-align:center;width:32px">#</th>
+              <th style="padding:10px 12px;color:#90e0ef;font-size:10px;text-align:left">Customer</th>
+              <th style="padding:10px 6px;color:#90e0ef;font-size:10px;text-align:center">Orders</th>
+              <th style="padding:10px 8px;color:#90e0ef;font-size:10px;text-align:right">Total Value</th>
+              ${months.map(m=>`<th style="padding:10px 6px;color:#90e0ef;font-size:10px;text-align:center;white-space:nowrap">${m.label}</th>`).join('')}
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+          <tfoot>
+            <tr style="background:#f0f0f0;border-top:2px solid #1a1a2e">
+              <td colspan="2" style="padding:10px 12px;font-size:12px;font-weight:800;color:#1a1a2e">Total</td>
+              <td style="padding:10px 6px;text-align:center;font-size:14px;font-weight:800;color:#1a1a2e">${grandOrders}</td>
+              <td style="padding:10px 8px;text-align:right;font-size:13px;font-weight:800;color:#1a1a2e;white-space:nowrap">${fmtMoney(grandValue)}</td>
+              ${monthTotals}
+            </tr>
+          </tfoot>
+        </table>
+      </div>
     </div>`;
 }
 
@@ -1561,11 +1592,11 @@ function renderMIS(allOrders, allCamps) {
       <div id="premiumCustomerCard"></div>
     </div>
     <div class="section">
-      <div class="section-title">👥 All Customers — Order History</div>
+      <div class="section-title">👥 All Customers — Month Wise Report</div>
       <div class="mis-card">
         <div class="mis-card-header">
-          <div><div class="mis-card-title">Customer Report</div><div class="mis-card-range">Deduplicated by Name + Phone</div></div>
-          <div class="mis-card-icon">👥</div>
+          <div><div class="mis-card-title">Customer Summary</div><div class="mis-card-range">S.No · Name · Orders · Value · Month-wise</div></div>
+          <button class="pdf-btn" onclick="downloadCustomerPDF()" style="margin:0;width:auto;padding:7px 14px;font-size:11px">⬇️ PDF</button>
         </div>
         ${renderCustomerReport(allOrders)}
       </div>
@@ -1790,191 +1821,268 @@ function showMonthFish(idx) {
     </div>`;
 }
 
-// ── ARCHIVE PDF DOWNLOAD ─────────────────────────────
-function downloadArchivePDF() {
-  // Collect archive HTML content
-  const archiveEl = document.getElementById('archiveContent');
-  if (!archiveEl) {
-    alert('Archive content not loaded yet. Please wait and try again.');
-    return;
-  }
-
-  // Get archive tab name for title
-  const tabBtn = document.getElementById('archiveTabBtn');
-  const title  = tabBtn ? tabBtn.textContent.trim() : 'TruSea Archive';
-
-  // Get current date/time
-  const now = new Date().toLocaleString('en-IN', {
-    day:'2-digit', month:'short', year:'numeric',
-    hour:'2-digit', minute:'2-digit', hour12:true
+// ── SHARED PDF HELPER ─────────────────────────────────
+function openPrintWindow(contentHtml, title) {
+  const now = new Date().toLocaleString('en-IN',{
+    day:'2-digit',month:'short',year:'numeric',
+    hour:'2-digit',minute:'2-digit',hour12:true
   });
 
-  // Open a new window with just the archive content
-  const printWin = window.open('', '_blank', 'width=800,height=900');
-  if (!printWin) {
-    alert('Pop-up blocked. Please allow pop-ups for this page and try again.');
-    return;
-  }
-
-  printWin.document.write(`<!DOCTYPE html>
+  const fullHtml = `<!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>${title}</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #fff;
-      color: #1a1a2e;
-      font-size: 13px;
-      padding: 20px;
-    }
-    .print-header {
-      background: #1a1a2e;
-      color: #fff;
-      padding: 16px 20px;
-      border-radius: 10px;
-      margin-bottom: 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-    }
-    .print-header h1 { font-size: 18px; font-weight: 800; color: #90e0ef; }
-    .print-header p  { font-size: 11px; color: rgba(255,255,255,0.6); margin-top:3px; }
-    .print-time { font-size: 11px; color: rgba(255,255,255,0.5); text-align: right; }
-
-    /* Copy all relevant styles from main page */
-    .section { padding: 0 0 12px; }
-    .section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #888; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
-    .section-title::after { content: ''; flex: 1; height: 1px; background: #e8e8e8; }
-    .archive-badge { background: #1a1a2e; color: #90e0ef; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; border-radius: 20px; padding: 3px 10px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .mis-card { background: #fff; border-radius: 12px; border: 1px solid #e8e8e8; overflow: hidden; margin-bottom: 12px; break-inside: avoid; }
-    .mis-card-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #f0f0f0; }
-    .mis-card-title { font-size: 14px; font-weight: 700; color: #1a1a2e; }
-    .mis-card-range { font-size: 11px; color: #888; margin-top: 2px; }
-    .mis-card-icon  { font-size: 20px; opacity: 0.5; }
-    .metrics { display: grid; grid-template-columns: 1fr 1fr; }
-    .metrics.three { grid-template-columns: 1fr 1fr 1fr; }
-    .metric { padding: 12px 8px; text-align: center; border-right: 1px solid #f0f0f0; border-bottom: 1px solid #f0f0f0; }
-    .metric:last-child { border-right: none; }
-    .metric-val { font-size: 22px; font-weight: 800; letter-spacing: -1px; color: #1a1a2e; }
-    .metric-val.money { font-size: 16px; }
-    .metric-val.green { color: #16a34a; }
-    .metric-val.red   { color: #dc2626; }
-    .metric-lbl { font-size: 10px; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; margin-top: 3px; }
-    .breakdown { padding: 0 16px 12px; }
-    .breakdown-title { font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 0 6px; border-top: 1px solid #f5f5f5; }
-    .breakdown-row { display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid #f7f7f7; gap: 8px; flex-wrap: wrap; }
-    .breakdown-row:last-child { border-bottom: none; }
-    .br-name { font-size: 12px; font-weight: 500; color: #1a1a2e; flex: 1; }
-    .br-time { font-size: 11px; color: #aaa; }
-    .br-val  { font-size: 13px; font-weight: 700; color: #1a1a2e; white-space: nowrap; }
-    .br-val.red { color: #dc2626; }
-    .empty-row { text-align: center; padding: 16px; color: #bbb; font-size: 12px; }
-    @media print {
-      body { padding: 0; }
-      .mis-card { break-inside: avoid; box-shadow: none; }
-      @page { margin: 12mm; size: A4; }
-    }
-  </style>
+<meta charset="UTF-8">
+<title>${title}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fff;color:#1a1a2e;font-size:12px;padding:16px}
+.print-header{background:#1a1a2e;color:#fff;padding:14px 18px;border-radius:10px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.print-header h1{font-size:17px;font-weight:800;color:#90e0ef}
+.print-header p{font-size:10px;color:rgba(255,255,255,0.5);margin-top:2px}
+.print-time{font-size:10px;color:rgba(255,255,255,0.45);text-align:right}
+.section{padding:0 0 12px}
+.section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:#888;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid #eee}
+.archive-badge{background:#1a1a2e;color:#90e0ef;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;border-radius:20px;padding:2px 8px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.mis-card{background:#fff;border-radius:10px;border:1px solid #e0e0e0;overflow:hidden;margin-bottom:10px;break-inside:avoid}
+.mis-card-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #f0f0f0}
+.mis-card-title{font-size:13px;font-weight:700;color:#1a1a2e}
+.mis-card-range{font-size:10px;color:#888;margin-top:1px}
+.mis-card-icon{font-size:18px;opacity:0.5}
+.metrics{display:grid;grid-template-columns:1fr 1fr}
+.metrics.three{grid-template-columns:1fr 1fr 1fr}
+.metric{padding:10px 8px;text-align:center;border-right:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.metric:last-child{border-right:none}
+.metric-val{font-size:20px;font-weight:800;letter-spacing:-1px;color:#1a1a2e}
+.metric-val.money{font-size:15px}
+.metric-val.green{color:#16a34a}
+.metric-val.red{color:#dc2626}
+.metric-lbl{font-size:9px;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:0.3px;margin-top:2px}
+.breakdown{padding:0 14px 10px}
+.breakdown-title{font-size:9px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;padding:8px 0 5px;border-top:1px solid #f5f5f5}
+.breakdown-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f7f7f7;gap:8px;flex-wrap:wrap}
+.breakdown-row:last-child{border-bottom:none}
+.br-name{font-size:11px;font-weight:500;color:#1a1a2e;flex:1}
+.br-time{font-size:10px;color:#aaa}
+.br-val{font-size:12px;font-weight:700;color:#1a1a2e;white-space:nowrap}
+.br-val.red{color:#dc2626}
+.empty-row{text-align:center;padding:14px;color:#bbb;font-size:11px}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{padding:7px 8px;text-align:left;font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.3px;border-bottom:1px solid #e0e0e0;background:#fafafa;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+td{padding:7px 8px;border-bottom:1px solid #f5f5f5;vertical-align:top}
+tr:nth-child(even) td{background:#fafafa;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+tfoot td{background:#f0f0f0;font-weight:700;border-top:2px solid #1a1a2e;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.afi-name{font-size:11px;font-weight:600;color:#1a1a2e}
+.afi-qty{text-align:right;font-size:12px;font-weight:800;color:#1a1a2e}
+.afi-kg{text-align:right;font-size:11px;color:#16a34a;font-weight:700}
+.afi-val{text-align:right;font-size:11px;font-weight:700}
+.archive-fish-item{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f5f5f5;gap:6px}
+.archive-fish-item:last-child{border-bottom:none}
+@media print{
+  body{padding:0}
+  .mis-card{break-inside:avoid;box-shadow:none}
+  @page{margin:10mm;size:A4}
+}
+</style>
 </head>
 <body>
-  <div class="print-header">
-    <div>
-      <h1>🐟 TruSea Fish</h1>
-      <p>${title}</p>
-    </div>
-    <div class="print-time">Generated: ${now}</div>
-  </div>
-  ${archiveEl.innerHTML}
-  <script>
-    window.onload = function() {
-      window.print();
-      setTimeout(function() { window.close(); }, 1500);
-    };
-  <\/script>
-</body>
-</html>`);
+<div class="print-header">
+  <div><h1>🐟 TruSea Fish</h1><p>${title}</p></div>
+  <div class="print-time">Generated: ${now}</div>
+</div>
+${contentHtml}
+<script>
+window.onload=function(){
+  setTimeout(function(){window.print();},400);
+};
+<\/script>
+</body></html>`;
 
-  printWin.document.close();
+  const blob = new Blob([fullHtml], {type:'text/html'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.target   = '_blank';
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(url), 10000);
+}
+
+// ── ARCHIVE PDF DOWNLOAD ─────────────────────────────
+function downloadArchivePDF() {
+  const el = document.getElementById('archiveContent');
+  if (!el) { alert('Archive not loaded yet. Please wait.'); return; }
+  const tabBtn = document.getElementById('archiveTabBtn');
+  const title  = tabBtn ? tabBtn.textContent.trim() : 'Archive Report';
+  openPrintWindow(el.innerHTML, title);
+}
+
+// ── CUSTOMER PDF DOWNLOAD ─────────────────────────────
+function downloadCustomerPDF() {
+  const el = document.getElementById('customerTableContent');
+  if (!el) { alert('Customer data not loaded yet.'); return; }
+  openPrintWindow(el.outerHTML, 'Customer Report — All Months');
+}
+
+// ── SHARED CUSTOMER DEDUP (phone-only key) ─────────────
+function buildCustMap(allOrders) {
+  const custMap = {};
+  allOrders.forEach(o => {
+    // Phone-only as primary key — handles name variations
+    const phone = (o.phone || '').replace(/\s/g, '').replace(/[^\d]/g, '');
+    const key   = phone || ('noPhone_' + o.name.toLowerCase().trim());
+
+    if (!custMap[key]) custMap[key] = {
+      phone:      o.phone || '—',
+      orders:     [],
+      totalSpend: 0,
+      nameCount:  {},  // track name frequency
+    };
+    custMap[key].orders.push(o);
+    custMap[key].totalSpend += o.total;
+    // Count name occurrences to pick most frequent
+    const nm = o.name.trim();
+    custMap[key].nameCount[nm] = (custMap[key].nameCount[nm] || 0) + 1;
+  });
+
+  // Pick most-frequent name as display name
+  Object.values(custMap).forEach(c => {
+    c.name = Object.entries(c.nameCount)
+      .sort((a, b) => b[1] - a[1])[0][0];
+    // Collect all name aliases for reference
+    c.aliases = Object.keys(c.nameCount).filter(n => n !== c.name);
+  });
+
+  return custMap;
 }
 
 // ── PREMIUM CUSTOMER CARD ─────────────────────────────
 function buildPremiumCustomerCard(allOrders) {
-  const custMap = {};
-  allOrders.forEach(o => {
-    const key = o.name.toLowerCase().trim() + '||' + (o.phone||'').replace(/\s/g,'');
-    if (!custMap[key]) custMap[key] = { name:o.name, phone:o.phone||'—', orders:[], totalSpend:0 };
-    custMap[key].orders.push(o);
-    custMap[key].totalSpend += o.total;
-  });
-
-  const sorted = Object.values(custMap).sort((a,b) => b.orders.length - a.orders.length || b.totalSpend - a.totalSpend);
-  const top3   = sorted.slice(0, 3);
+  const custMap = buildCustMap(allOrders);
+  const sorted  = Object.values(custMap)
+    .sort((a, b) => b.totalSpend - a.totalSpend || b.orders.length - a.orders.length);
+  const top3    = sorted.slice(0, 3);
 
   if (!top3.length) {
     document.getElementById('premiumCustomerCard').innerHTML = '<div class="empty-row">No customer data yet</div>';
     return;
   }
 
-  const medals = ['🥇','🥈','🥉'];
+  // Collect all unique months from all orders for month-wise columns
+  const monthSet = {};
+  allOrders.forEach(o => {
+    const d = o.deliveredDate || o.ts;
+    if (!d) return;
+    const mk = d.getFullYear() + '-' + String(d.getMonth()).padStart(2,'0');
+    if (!monthSet[mk]) monthSet[mk] = {
+      key: mk, year: d.getFullYear(), month: d.getMonth(),
+      label: d.toLocaleDateString('en-IN', {month:'short', year:'numeric'})
+    };
+  });
+  const months = Object.values(monthSet).sort((a,b) => a.key.localeCompare(b.key));
+
+  const medals     = ['🥇','🥈','🥉'];
+  const borderClrs = ['#f59e0b','#9ca3af','#b45309'];
+
   const html = top3.map((c, i) => {
-    // Fish stats
+    // Fish stats from productReport (Col L)
     const fishMap = {};
     c.orders.forEach(o => {
-      const raw = o.fishSold || o.productReport || '';
-      parseProductReport(raw).forEach(item => {
-        if (!fishMap[item.key]) fishMap[item.key] = 0;
-        fishMap[item.key] += item.qty;
+      const raw = o.productReport || '';
+      if (!raw) return;
+      raw.split('|').map(s => s.trim()).filter(Boolean).forEach(seg => {
+        // "Seer - Vanjaram – Small Slices - 1kg" — use segment as key
+        const dashIdx = seg.lastIndexOf(' - ');
+        const name = dashIdx > 0 ? seg.slice(0, dashIdx).trim() : seg;
+        fishMap[name] = (fishMap[name] || 0) + 1;
       });
     });
-    const fishList = Object.entries(fishMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    const fishList     = Object.entries(fishMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
     const totalFishQty = Object.values(fishMap).reduce((a,b)=>a+b,0);
+
+    // Month-wise purchase value
+    const monthCols = months.map(m => {
+      const mStart  = new Date(m.year, m.month, 1);
+      const mEnd    = new Date(m.year, m.month+1, 0, 23, 59, 59);
+      const mOrders = c.orders.filter(o => {
+        const d = o.deliveredDate || o.ts;
+        return d && d >= mStart && d <= mEnd;
+      });
+      if (!mOrders.length) return null;
+      return {
+        label:  m.label,
+        count:  mOrders.length,
+        value:  sumTotal(mOrders),
+      };
+    }).filter(Boolean);
 
     // Order dates
     const dates = c.orders.map(o => {
       const d = o.deliveredDate || o.ts;
-      return d ? d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'}) : '—';
+      return d ? d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'}) : null;
     }).filter(Boolean);
-    const uniqueDates = [...new Set(dates)].slice(0,5);
+    const uniqueDates = [...new Set(dates)];
 
     return `
-      <div class="mis-card" style="margin-bottom:10px;border-left:4px solid ${i===0?'#f59e0b':i===1?'#9ca3af':'#b45309'}">
-        <div class="mis-card-header" style="padding-bottom:8px">
+      <div class="mis-card" style="margin-bottom:10px;border-left:4px solid ${borderClrs[i]};-webkit-print-color-adjust:exact">
+
+        <!-- Header -->
+        <div style="padding:12px 16px 10px;border-bottom:1px solid #f0f0f0;display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
           <div style="flex:1">
-            <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">${medals[i]} ${i===0?'Top Customer':i===1?'2nd Most Loyal':'3rd Most Loyal'}</div>
-            <div style="font-size:16px;font-weight:800;color:#1a1a2e">${c.name}</div>
-            <div style="font-size:12px;color:#888;margin-top:2px">📞 ${c.phone}</div>
+            <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">
+              ${medals[i]} ${i===0?'Top Customer':i===1?'2nd Most Loyal':'3rd Most Loyal'}
+            </div>
+            <div style="font-size:17px;font-weight:800;color:#1a1a2e;line-height:1.2">${c.name}</div>
+            ${c.aliases.length ? `<div style="font-size:10px;color:#aaa;margin-top:2px">Also: ${c.aliases.join(', ')}</div>` : ''}
+            <div style="font-size:12px;color:#888;margin-top:3px">📞 ${c.phone}</div>
           </div>
           <div style="text-align:right;flex-shrink:0">
-            <div style="font-size:22px;font-weight:800;color:#1a1a2e">${c.orders.length}</div>
+            <div style="font-size:24px;font-weight:900;color:#1a1a2e;line-height:1">${c.orders.length}</div>
             <div style="font-size:10px;color:#888;font-weight:600;text-transform:uppercase">Orders</div>
-            <div style="font-size:14px;font-weight:700;color:#0077b6;margin-top:4px">${fmtMoney(c.totalSpend)}</div>
+            <div style="font-size:15px;font-weight:800;color:#0077b6;margin-top:6px">${fmtMoney(c.totalSpend)}</div>
             <div style="font-size:10px;color:#888">Total Spent</div>
+            <div style="font-size:11px;color:#888;margin-top:3px">Avg ${fmtMoney(Math.round(c.totalSpend/c.orders.length))}</div>
           </div>
         </div>
-        <div style="padding:0 16px 12px;display:flex;flex-direction:column;gap:8px">
-          ${fishList.length ? `
-          <div>
-            <div style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px">🐟 Fish Purchased (${totalFishQty} qty total)</div>
-            ${fishList.map(([name,qty]) => `
-              <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f5f5f5;font-size:12px">
-                <span style="color:#1a1a2e">${name}</span>
-                <span style="font-weight:700;color:#0077b6">${qty} qty</span>
+
+        <!-- Month-wise value -->
+        ${monthCols.length ? `
+        <div style="padding:10px 16px;border-bottom:1px solid #f0f0f0">
+          <div style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">
+            💰 Month-wise Purchase Value
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            ${monthCols.map(m => `
+              <div style="background:#f8fafc;border:1px solid #e8edf2;border-radius:8px;padding:6px 10px;text-align:center;min-width:70px">
+                <div style="font-size:10px;color:#888;font-weight:600">${m.label}</div>
+                <div style="font-size:13px;font-weight:800;color:#1a1a2e;margin-top:1px">${fmtMoney(m.value)}</div>
+                <div style="font-size:10px;color:#0077b6">${m.count} order${m.count>1?'s':''}</div>
               </div>`).join('')}
-          </div>` : ''}
-          ${uniqueDates.length ? `
-          <div>
-            <div style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">📅 Order Dates</div>
-            <div style="font-size:11px;color:#555;line-height:1.6">${uniqueDates.join(' · ')}${dates.length > 5 ? ` +${dates.length-5} more`:''}</div>
-          </div>` : ''}
-          <div style="display:flex;gap:12px">
-            <div><span style="font-size:11px;color:#888">Avg order: </span><span style="font-size:12px;font-weight:700">${fmtMoney(Math.round(c.totalSpend/c.orders.length))}</span></div>
           </div>
-        </div>
+        </div>` : ''}
+
+        <!-- Fish purchased -->
+        ${fishList.length ? `
+        <div style="padding:10px 16px;border-bottom:1px solid #f0f0f0">
+          <div style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">
+            🐟 Fish Purchased (${totalFishQty} qty total)
+          </div>
+          ${fishList.map(([name,qty]) => `
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #f7f7f7">
+              <span style="font-size:12px;color:#1a1a2e;font-weight:500">${name}</span>
+              <span style="font-size:12px;font-weight:800;color:#0077b6">${qty} qty</span>
+            </div>`).join('')}
+        </div>` : ''}
+
+        <!-- Dates -->
+        ${uniqueDates.length ? `
+        <div style="padding:8px 16px">
+          <div style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">
+            📅 Order Dates (${uniqueDates.length})
+          </div>
+          <div style="font-size:11px;color:#555;line-height:1.8">
+            ${uniqueDates.join(' · ')}
+          </div>
+        </div>` : ''}
+
       </div>`;
   }).join('');
 
