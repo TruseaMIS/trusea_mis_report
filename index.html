@@ -726,14 +726,20 @@ function buildFishReport(orders) {
   const map = {};
   orders.forEach(o=>{
     if(!o.productReport) return;
-    parseProductReport(o.productReport).forEach(item=>{
-      if(!map[item.key]) map[item.key] = { key:item.key, name:item.name, size:item.size, totalQty:0, totalKg:0 };
+    const items = parseProductReport(o.productReport);
+    const totalItemQty = items.reduce((a,item)=>a+item.qty, 0);
+    items.forEach(item=>{
+      if(!map[item.key]) map[item.key] = { key:item.key, name:item.name, size:item.size, totalQty:0, totalKg:0, totalValue:0 };
       map[item.key].totalQty += item.qty;
       const kg = item.size.endsWith('kg')
         ? parseFloat(item.size)*item.qty
         : item.size.endsWith('g')
           ? (parseFloat(item.size)/1000)*item.qty : 0;
       map[item.key].totalKg += kg;
+      // Apportion order total by qty share
+      if (totalItemQty > 0 && o.total > 0) {
+        map[item.key].totalValue += o.total * item.qty / totalItemQty;
+      }
     });
   });
   return Object.values(map).sort((a,b)=>b.totalQty-a.totalQty);
@@ -1267,11 +1273,155 @@ function renderMonthArchive(allOrders, allCamps) {
         </div>` : ''}
       </div>
 
+      <!-- CUSTOMER PURCHASE SECTION -->
+      <div class="mis-card">
+        <div class="mis-card-header">
+          <div>
+            <div class="mis-card-title">👥 Customer Purchase — Month Wise</div>
+            <div class="mis-card-range">Who bought what, every month</div>
+          </div>
+          <div class="mis-card-icon">👥</div>
+        </div>
+        <div class="month-fish-chips" id="archCustChips"></div>
+        <div id="archCustPanel"><div class="empty-row">Select a month above</div></div>
+      </div>
+
     </div>
     </div>`;
 }
 
-// ── MAIN RENDER ───────────────────────────────────────
+// ── ARCHIVE CUSTOMER CHIPS ─────────────────────────────
+function buildArchiveCustomerChips(allOrders) {
+  // Collect all months that have orders (deliveredDate or ts)
+  const monthSet = {};
+  allOrders.forEach(o => {
+    const d = o.deliveredDate || o.ts;
+    if (!d) return;
+    const k = d.getFullYear() + '-' + String(d.getMonth()).padStart(2,'0');
+    if (!monthSet[k]) monthSet[k] = {
+      key: k, year: d.getFullYear(), month: d.getMonth(),
+      label: d.toLocaleDateString('en-IN',{month:'short',year:'numeric'}),
+      fullLabel: d.toLocaleDateString('en-IN',{month:'long',year:'numeric'}),
+    };
+  });
+
+  const months = Object.values(monthSet).sort((a,b) => b.key.localeCompare(a.key)); // newest first
+
+  const chipsEl = document.getElementById('archCustChips');
+  const panelEl = document.getElementById('archCustPanel');
+  if (!chipsEl || !panelEl) return;
+
+  if (!months.length) {
+    chipsEl.innerHTML = '<div style="padding:10px;font-size:12px;color:#aaa">No data</div>';
+    return;
+  }
+
+  chipsEl.innerHTML = months.map((m, i) =>
+    `<button class="mchip ${i===0?'active':''}" id="archcchip_${i}" onclick="showArchiveCust(${i})">${m.label}</button>`
+  ).join('');
+
+  // Store data globally
+  window._archCustMonths = months.map(m => {
+    const mStart  = new Date(m.year, m.month, 1);
+    const mEnd    = new Date(m.year, m.month+1, 0, 23, 59, 59);
+    const mOrders = allOrders.filter(o => {
+      const d = o.deliveredDate || o.ts;
+      return d && d >= mStart && d <= mEnd;
+    });
+    return { ...m, orders: mOrders };
+  });
+
+  showArchiveCust(0);
+}
+
+function showArchiveCust(idx) {
+  document.querySelectorAll('[id^="archcchip_"]').forEach((el,i) => el.classList.toggle('active', i===idx));
+  const data = window._archCustMonths && window._archCustMonths[idx];
+  const panel = document.getElementById('archCustPanel');
+  if (!data || !panel) return;
+
+  if (!data.orders.length) {
+    panel.innerHTML = `<div class="empty-row" style="padding:20px">No orders in ${data.fullLabel}</div>`;
+    return;
+  }
+
+  // Group by phone (same dedup logic)
+  const custMap = buildCustMap(data.orders);
+  const custs   = Object.values(custMap)
+    .sort((a,b) => b.totalSpend - a.totalSpend);
+
+  const rev = sumTotal(data.orders);
+
+  // Build rows
+  const rows = custs.map((c, i) => {
+    // Fish for this customer in this month
+    const fishMap = {};
+    c.orders.forEach(o => {
+      const raw = o.productReport || '';
+      raw.split('|').map(s=>s.trim()).filter(Boolean).forEach(seg => {
+        const di = seg.lastIndexOf(' - ');
+        const nm = di > 0 ? seg.slice(0,di).trim() : seg;
+        fishMap[nm] = (fishMap[nm]||0) + 1;
+      });
+    });
+    const fishStr = Object.entries(fishMap)
+      .sort((a,b)=>b[1]-a[1])
+      .map(([n,q]) => `${n} <span style="font-weight:800;color:#0077b6">${q}qty</span>`)
+      .join(' · ');
+
+    return `<tr style="${i%2===0?'':'background:#fafafa'}">
+      <td style="padding:8px 8px;text-align:center;font-size:11px;color:#888;font-weight:600">${i+1}</td>
+      <td style="padding:8px 10px">
+        <div style="font-size:13px;font-weight:700;color:#1a1a2e">${c.name}</div>
+        ${c.aliases.length?`<div style="font-size:10px;color:#bbb">${c.aliases.join(', ')}</div>`:''}
+        <div style="font-size:11px;color:#888">📞 ${c.phone}</div>
+      </td>
+      <td style="padding:8px 6px;text-align:center;font-size:14px;font-weight:800;color:#1a1a2e">${c.orders.length}</td>
+      <td style="padding:8px 10px;text-align:right;font-size:13px;font-weight:800;color:#1a1a2e;white-space:nowrap">${fmtMoney(c.totalSpend)}</td>
+      <td style="padding:8px 10px;font-size:11px;color:#1a1a2e;line-height:1.7">${fishStr||'—'}</td>
+    </tr>`;
+  }).join('');
+
+  panel.innerHTML = `
+    <!-- Month summary strip -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:#f0f0f0;border-bottom:1px solid #eee">
+      <div style="background:#fff;padding:10px 8px;text-align:center">
+        <div style="font-size:20px;font-weight:800;color:#1a1a2e">${data.orders.length}</div>
+        <div style="font-size:10px;color:#888;font-weight:600;text-transform:uppercase">Orders</div>
+      </div>
+      <div style="background:#fff;padding:10px 8px;text-align:center">
+        <div style="font-size:20px;font-weight:800;color:#1a1a2e">${custs.length}</div>
+        <div style="font-size:10px;color:#888;font-weight:600;text-transform:uppercase">Customers</div>
+      </div>
+      <div style="background:#fff;padding:10px 8px;text-align:center">
+        <div style="font-size:16px;font-weight:800;color:#1a1a2e">${fmtMoney(rev)}</div>
+        <div style="font-size:10px;color:#888;font-weight:600;text-transform:uppercase">Revenue</div>
+      </div>
+    </div>
+    <!-- Table -->
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:480px">
+        <thead>
+          <tr style="background:#1a1a2e">
+            <th style="padding:8px 8px;color:#90e0ef;font-size:10px;text-align:center;width:32px">#</th>
+            <th style="padding:8px 12px;color:#90e0ef;font-size:10px;text-align:left">Customer</th>
+            <th style="padding:8px 6px;color:#90e0ef;font-size:10px;text-align:center">Orders</th>
+            <th style="padding:8px 8px;color:#90e0ef;font-size:10px;text-align:right">Value</th>
+            <th style="padding:8px 10px;color:#90e0ef;font-size:10px;text-align:left">Fish Ordered</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+        <tfoot>
+          <tr style="background:#f0f0f0;border-top:2px solid #1a1a2e">
+            <td colspan="2" style="padding:8px 12px;font-size:12px;font-weight:800;color:#1a1a2e">Total</td>
+            <td style="padding:8px 6px;text-align:center;font-size:13px;font-weight:800;color:#1a1a2e">${data.orders.length}</td>
+            <td style="padding:8px 8px;text-align:right;font-size:13px;font-weight:800;color:#1a1a2e;white-space:nowrap">${fmtMoney(rev)}</td>
+            <td style="padding:8px 10px"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>`;
+}
 function renderMIS(allOrders, allCamps) {
   _allOrders = allOrders;
   _allCamps  = allCamps;
@@ -1769,18 +1919,12 @@ function buildMonthFishChips(allOrders) {
 }
 
 function showMonthFish(idx) {
-  // Update chip active state
-  document.querySelectorAll('.mchip').forEach((el, i) => {
+  document.querySelectorAll('#monthFishChips .mchip').forEach((el, i) => {
     el.classList.toggle('active', i === idx);
   });
 
   const data = window._monthFishData && window._monthFishData[idx];
   if (!data) return;
-
-  const fish     = buildFishReport(data.orders);
-  const rev      = sumTotal(data.orders);
-  const totalQty = fish.reduce((a, f) => a + f.totalQty, 0);
-  const totalKg  = fish.reduce((a, f) => a + f.totalKg, 0);
 
   const panel = document.getElementById('monthFishPanel');
   if (!panel) return;
@@ -1790,55 +1934,120 @@ function showMonthFish(idx) {
     return;
   }
 
+  // Get all 4 weeks of this month
+  const mStart = new Date(data.year, data.month, 1);
+  const mEnd   = new Date(data.year, data.month+1, 0, 23, 59, 59);
+  const weeks  = [1,2,3,4].map(wn => {
+    // Week 1 = day 1-7, Week 2 = 8-14, Week 3 = 15-21, Week 4 = 22-end
+    const wStart = new Date(data.year, data.month, (wn-1)*7+1);
+    const wEnd   = wn < 4
+      ? new Date(data.year, data.month, wn*7, 23, 59, 59)
+      : mEnd;
+    const wOrders = data.orders.filter(o => {
+      const d = o.deliveredDate || o.ts;
+      return d && d >= wStart && d <= wEnd;
+    });
+    return { label: `Week ${wn}`, orders: wOrders };
+  });
+
+  // All fish across full month
+  const fish     = buildFishReport(data.orders);
+  const rev      = sumTotal(data.orders);
+  const totalQty = fish.reduce((a,f)=>a+f.totalQty,0);
+  const totalKg  = fish.reduce((a,f)=>a+f.totalKg,0);
+  const totalVal = fish.reduce((a,f)=>a+f.totalValue,0);
+
   if (!fish.length) {
-    panel.innerHTML = `<div class="empty-row" style="padding:20px">No product report data for ${data.fullLabel}<br><span style="font-size:11px;color:#bbb">Run Apps Script → generateAll() to fill Column L</span></div>`;
+    panel.innerHTML = `<div class="empty-row" style="padding:20px">No product report data — run Apps Script generateAll()</div>`;
     return;
   }
 
-  const rows = fish.map(f => {
-    const pct = totalQty > 0 ? Math.round(f.totalQty / totalQty * 100) : 0;
-    const kgStr = f.totalKg > 0 ? f.totalKg.toFixed(2) + ' kg' : '—';
-    return `
-      <div style="padding:9px 16px;border-bottom:1px solid #f7f7f7">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px">
-          <div style="font-size:12px;font-weight:600;color:#1a1a2e;flex:1">${f.key}</div>
-          <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
-            <span style="font-size:11px;color:#888">${kgStr}</span>
-            <span style="font-size:13px;font-weight:800;color:#1a1a2e">${f.totalQty} qty</span>
-          </div>
-        </div>
-        <div style="height:5px;background:#f0f0f0;border-radius:10px;overflow:hidden">
-          <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#1a1a2e,#0f3460);border-radius:10px"></div>
-        </div>
-        <div style="font-size:9px;color:#bbb;text-align:right;margin-top:2px">${pct}% of total</div>
-      </div>`;
+  // Build week fish maps
+  const weekFish = weeks.map(w => {
+    const wf = buildFishReport(w.orders);
+    const wmap = {};
+    wf.forEach(f => { wmap[f.key] = f; });
+    return { label: w.label, orders: w.orders, map: wmap, rev: sumTotal(w.orders) };
+  });
+
+  // Header: Fish | (kgs) | Week1 Sales ₹ | (kgs) | Week2 ... | Total ₹ | (kgs)
+  const weekHeaders = weekFish.map(w =>
+    `<th style="text-align:right;padding:8px 8px;color:#90e0ef;font-size:10px;white-space:nowrap">Sales (₹)</th>
+     <th style="text-align:right;padding:8px 6px;color:#90e0ef;font-size:10px">(qty)</th>`
+  ).join('');
+
+  const fishRows = fish.map((f, i) => {
+    const weekCols = weekFish.map(w => {
+      const wf = w.map[f.key];
+      if (!wf) return `<td style="text-align:right;color:#e0e0e0;font-size:11px;padding:7px 8px">—</td>
+                       <td style="text-align:right;color:#e0e0e0;font-size:11px;padding:7px 6px">—</td>`;
+      return `<td style="text-align:right;font-size:12px;font-weight:700;color:#1a1a2e;padding:7px 8px;white-space:nowrap">${fmtMoney(Math.round(wf.totalValue))}</td>
+              <td style="text-align:right;font-size:11px;color:#0077b6;font-weight:600;padding:7px 6px">${wf.totalQty}</td>`;
+    }).join('');
+
+    return `<tr style="${i%2===0?'':'background:#fafafa'}">
+      <td style="padding:7px 10px;font-size:12px;font-weight:600;color:#1a1a2e;max-width:180px">${f.key}</td>
+      <td style="text-align:right;font-size:12px;font-weight:800;color:#1a1a2e;padding:7px 8px;white-space:nowrap">${fmtMoney(Math.round(f.totalValue))}</td>
+      <td style="text-align:right;font-size:12px;font-weight:800;color:#0077b6;padding:7px 6px">${f.totalQty}</td>
+      ${weekCols}
+    </tr>`;
+  }).join('');
+
+  // Total rows per week
+  const weekTotals = weekFish.map(w => {
+    const wqty = Object.values(w.map).reduce((a,f)=>a+f.totalQty,0);
+    return `<td style="text-align:right;font-size:12px;font-weight:800;color:#1a1a2e;padding:8px 8px;background:#f0f0f0;white-space:nowrap">${fmtMoney(Math.round(w.rev))}</td>
+            <td style="text-align:right;font-size:12px;font-weight:800;color:#0077b6;padding:8px 6px;background:#f0f0f0">${wqty}</td>`;
   }).join('');
 
   panel.innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:#f0f0f0;margin-bottom:2px">
-      <div style="background:#fff;padding:12px 8px;text-align:center">
-        <div style="font-size:20px;font-weight:800;color:#1a1a2e">${data.orders.length}</div>
+    <!-- Summary strip -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:1px;background:#f0f0f0;border-bottom:1px solid #eee">
+      <div style="background:#fff;padding:10px 8px;text-align:center">
+        <div style="font-size:18px;font-weight:800;color:#1a1a2e">${data.orders.length}</div>
         <div style="font-size:10px;color:#888;font-weight:600;text-transform:uppercase">Orders</div>
       </div>
-      <div style="background:#fff;padding:12px 8px;text-align:center">
-        <div style="font-size:20px;font-weight:800;color:#1a1a2e">${totalQty}</div>
+      <div style="background:#fff;padding:10px 8px;text-align:center">
+        <div style="font-size:18px;font-weight:800;color:#1a1a2e">${fish.length}</div>
+        <div style="font-size:10px;color:#888;font-weight:600;text-transform:uppercase">Varieties</div>
+      </div>
+      <div style="background:#fff;padding:10px 8px;text-align:center">
+        <div style="font-size:18px;font-weight:800;color:#1a1a2e">${totalQty}</div>
         <div style="font-size:10px;color:#888;font-weight:600;text-transform:uppercase">Total Qty</div>
       </div>
-      <div style="background:#fff;padding:12px 8px;text-align:center">
-        <div style="font-size:16px;font-weight:800;color:#1a1a2e">${fmtMoney(rev)}</div>
+      <div style="background:#fff;padding:10px 8px;text-align:center">
+        <div style="font-size:15px;font-weight:800;color:#1a1a2e">${fmtMoney(Math.round(rev))}</div>
         <div style="font-size:10px;color:#888;font-weight:600;text-transform:uppercase">Revenue</div>
       </div>
     </div>
-    <div style="padding:8px 16px 4px;font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;border-top:1px solid #f0f0f0">
-      Fish sold — ${data.fullLabel} · ${totalKg.toFixed(2)} kg total
-    </div>
-    ${rows}
-    <div style="display:flex;justify-content:space-between;padding:10px 16px;border-top:2px solid #1a1a2e;margin-top:2px;background:#fafafa">
-      <div style="font-size:13px;font-weight:800;color:#1a1a2e">Total</div>
-      <div style="display:flex;gap:16px">
-        <span style="font-size:12px;color:#666;font-weight:600">${totalKg.toFixed(2)} kg</span>
-        <span style="font-size:13px;font-weight:800;color:#1a1a2e">${totalQty} qty</span>
-      </div>
+
+    <!-- Week header row -->
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:600px">
+        <thead>
+          <!-- Month label row -->
+          <tr style="background:#e8edf2">
+            <td colspan="3" style="padding:6px 10px;font-size:11px;font-weight:700;color:#1a1a2e">${data.fullLabel}</td>
+            ${weekFish.map(w=>`<td colspan="2" style="padding:6px 8px;text-align:center;font-size:11px;font-weight:700;color:#1a1a2e;border-left:1px solid #d0d8e0">${w.label}</td>`).join('')}
+          </tr>
+          <!-- Column headers -->
+          <tr style="background:#1a1a2e">
+            <th style="padding:8px 10px;color:#90e0ef;font-size:10px;text-align:left;min-width:160px">Fish / Product</th>
+            <th style="padding:8px 8px;color:#90e0ef;font-size:10px;text-align:right">Total ₹</th>
+            <th style="padding:8px 6px;color:#90e0ef;font-size:10px;text-align:right">Qty</th>
+            ${weekHeaders}
+          </tr>
+        </thead>
+        <tbody>${fishRows}</tbody>
+        <tfoot>
+          <tr style="border-top:2px solid #1a1a2e">
+            <td style="padding:8px 10px;font-size:12px;font-weight:800;color:#1a1a2e;background:#f0f0f0">Total</td>
+            <td style="text-align:right;font-size:12px;font-weight:800;color:#1a1a2e;padding:8px 8px;background:#f0f0f0;white-space:nowrap">${fmtMoney(Math.round(rev))}</td>
+            <td style="text-align:right;font-size:12px;font-weight:800;color:#0077b6;padding:8px 6px;background:#f0f0f0">${totalQty}</td>
+            ${weekTotals}
+          </tr>
+        </tfoot>
+      </table>
     </div>`;
 }
 
@@ -2229,6 +2438,7 @@ async function init() {
     buildMonthFishChips(orders);
     buildDayFishChips(orders);
     buildPremiumCustomerCard(orders);
+    buildArchiveCustomerChips(orders);
     document.getElementById('syncInfo').textContent =
       `✓ Synced · ${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}`;
   } catch(e) {
