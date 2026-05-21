@@ -964,6 +964,49 @@ function renderMIS(allOrders, allCamps) {
   document.getElementById('content').innerHTML = html;
   document.getElementById('footerNote').textContent =
     `Orders: ${allOrders.length} records · Campaigns: ${allCamps.length} entries · Last sync: ${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}`;
+
+  // Inject Day Wise Fish + Customer Date-wise sections after render
+  setTimeout(() => {
+    const content = document.getElementById('content');
+    if (!content) return;
+
+    // 1. Day Wise Fish Sales section
+    if (!document.getElementById('dayFishChips')) {
+      const daySection = document.createElement('div');
+      daySection.className = 'section';
+      daySection.innerHTML = `
+        <div class="section-title">📅 Day Wise Fish Sales</div>
+        <div class="mis-card" style="overflow:hidden">
+          <div class="mis-card-header">
+            <div><div class="mis-card-title">Daily Fish Report</div><div class="mis-card-range">Select a day</div></div>
+            <div class="mis-card-icon">📅</div>
+          </div>
+          <div class="month-fish-chips" id="dayFishChips" style="display:flex;gap:6px;padding:10px 14px;overflow-x:auto;scrollbar-width:none;background:#fff;border-bottom:1px solid #f0f0f0;flex-wrap:nowrap"></div>
+          <div id="dayFishPanel"></div>
+        </div>`;
+      content.appendChild(daySection);
+    }
+
+    // 2. Customer date-wise section
+    if (!document.getElementById('custDateChips')) {
+      const custSection = document.createElement('div');
+      custSection.className = 'section';
+      custSection.innerHTML = `
+        <div class="section-title">👥 Customer Purchase — Date Wise</div>
+        <div class="mis-card" id="custDateCard" style="overflow:hidden">
+          <div class="mis-card-header">
+            <div><div class="mis-card-title">Who Bought What — By Delivered Date</div><div class="mis-card-range">Col N · Select a date</div></div>
+            <button onclick="downloadSectionPDF('custDateCard','Customer Date-wise Purchase')" style="background:#1a1a2e;color:#fff;border:none;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer">⬇️ PDF</button>
+          </div>
+          <div class="month-fish-chips" id="custDateChips" style="display:flex;gap:6px;padding:10px 14px;overflow-x:auto;scrollbar-width:none;background:#fff;border-bottom:1px solid #f0f0f0;flex-wrap:nowrap"></div>
+          <div id="custDatePanel"></div>
+        </div>`;
+      content.appendChild(custSection);
+    }
+
+    buildDayFishChips(allOrders);
+    buildCustomerDateWise(allOrders);
+  }, 100);
 }
 
 // ── FISH TABLE RENDER ────────────────────────────────
@@ -1065,8 +1108,43 @@ async function init() {
       fetchSheetByGID(GID_ORDERS),
       fetchSheetByGID(GID_CAMPS),
     ]);
-    const orders = parseOrders(ordersTable);
-    const camps  = parseCampaigns(campsTable);
+
+    // Parse orders with Col N (Delivered Date), Col O (Booked Date), Phone
+    const labels = (ordersTable.cols||[]).map(c=>(c.label||'').trim());
+    const fi = name => {
+      let i=labels.findIndex(c=>c===name); if(i>=0)return i;
+      i=labels.findIndex(c=>c.toLowerCase()===name.toLowerCase()); if(i>=0)return i;
+      return labels.findIndex(c=>c.toLowerCase().includes(name.toLowerCase()));
+    };
+    const iTs=fi('Timestamp'), iName=fi('Name'), iPhone=fi('Phone'),
+          iTotal=fi('Order Total'), iReport=fi('Product Report'),
+          iDeliv=fi('Delivered Date'), iBooked=fi('Booked Date');
+
+    const v=(r,i)=>(i>=0&&r.c[i]&&r.c[i].v!=null)?String(r.c[i].v).trim():'';
+    const fv=(r,i)=>(i>=0&&r.c[i])?(r.c[i].f||v(r,i)):'';
+    const parseD=(r,i)=>{
+      if(i<0||!r.c[i]||r.c[i].v==null)return null;
+      const raw=r.c[i].v;
+      if(typeof raw==='string'&&raw.startsWith('Date(')){
+        const p=raw.replace('Date(','').replace(')','').split(',');
+        return new Date(+p[0],+p[1],+p[2],+(p[3]||0),+(p[4]||0));
+      }
+      if(r.c[i].f){const d=new Date(r.c[i].f);if(!isNaN(d))return d;}
+      const d=new Date(String(r.c[i].v));return isNaN(d)?null:d;
+    };
+    const parseTotal=str=>{if(!str)return 0;const n=parseFloat(str.replace(/[^0-9.]/g,''));return isNaN(n)?0:n;};
+
+    const orders = (ordersTable.rows||[]).map(r=>({
+      name:          v(r,iName),
+      phone:         v(r,iPhone),
+      ts:            parseD(r,iTs),
+      deliveredDate: parseD(r,iDeliv),
+      bookedDate:    parseD(r,iBooked),
+      total:         parseTotal(fv(r,iTotal)||v(r,iTotal)),
+      productReport: v(r,iReport),
+    })).filter(o=>o.name&&o.name.length>1&&o.ts);
+
+    const camps = parseCampaigns(campsTable);
     renderMIS(orders, camps);
     document.getElementById('syncInfo').textContent =
       `✓ Synced · ${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}`;
@@ -1354,109 +1432,7 @@ function showCustDate(idx) {
     </div>`;
 }
 
-// ── UPDATED RENDER: inject new sections + tabs ────────
-const _origRenderMIS = renderMIS;
-function renderMIS(allOrders, allCamps) {
-  _origRenderMIS(allOrders, allCamps);
-
-  // Inject Day Wise Fish section into content after existing fish section
-  const content = document.getElementById('content');
-  if (!content) return;
-
-  // 1. Day Wise Fish Sales section (CSS chips + panel already styled via .mchip)
-  const daySection = document.createElement('div');
-  daySection.className = 'section';
-  daySection.innerHTML = `
-    <div class="section-title">📅 Day Wise Fish Sales</div>
-    <div class="mis-card" style="overflow:hidden">
-      <div class="mis-card-header">
-        <div><div class="mis-card-title">Daily Fish Report</div><div class="mis-card-range">Select a day</div></div>
-        <div class="mis-card-icon">📅</div>
-      </div>
-      <div class="month-fish-chips" id="dayFishChips" style="display:flex;gap:6px;padding:10px 14px;overflow-x:auto;scrollbar-width:none;background:#fff;border-bottom:1px solid #f0f0f0;flex-wrap:nowrap"></div>
-      <div id="dayFishPanel"></div>
-    </div>`;
-  content.appendChild(daySection);
-
-  // 2. Customer date-wise section
-  const custSection = document.createElement('div');
-  custSection.className = 'section';
-  custSection.innerHTML = `
-    <div class="section-title">👥 Customer Purchase — Date Wise</div>
-    <div class="mis-card" id="custDateCard" style="overflow:hidden">
-      <div class="mis-card-header">
-        <div><div class="mis-card-title">Who Bought What — By Delivered Date</div><div class="mis-card-range">Col N · Select a date</div></div>
-        <button onclick="downloadSectionPDF('custDateCard','Customer Date-wise Purchase')" style="background:#1a1a2e;color:#fff;border:none;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer">⬇️ PDF</button>
-      </div>
-      <div class="month-fish-chips" id="custDateChips" style="display:flex;gap:6px;padding:10px 14px;overflow-x:auto;scrollbar-width:none;background:#fff;border-bottom:1px solid #f0f0f0;flex-wrap:nowrap"></div>
-      <div id="custDatePanel"></div>
-    </div>`;
-  content.appendChild(custSection);
-
-  // Build after DOM is ready
-  setTimeout(() => {
-    buildDayFishChips(allOrders);
-    buildCustomerDateWise(allOrders);
-  }, 100);
-}
-
-// ── UPDATED INIT ──────────────────────────────────────
-const _origInit = init;
-async function init() {
-  document.getElementById('syncInfo').textContent = 'Syncing…';
-  document.getElementById('content').innerHTML =
-    '<div class="loading"><div class="spinner"></div>Fetching data…</div>';
-  try {
-    const [ordersTable, campsTable] = await Promise.all([
-      fetchSheetByGID(GID_ORDERS),
-      fetchSheetByGID(GID_CAMPS),
-    ]);
-    // Updated parseOrders with Col N, O, phone
-    const labels  = (ordersTable.cols||[]).map(c=>(c.label||'').trim());
-    const fi = name => {
-      let i=labels.findIndex(c=>c===name); if(i>=0)return i;
-      i=labels.findIndex(c=>c.toLowerCase()===name.toLowerCase()); if(i>=0)return i;
-      return labels.findIndex(c=>c.toLowerCase().includes(name.toLowerCase()));
-    };
-    const iTs=fi('Timestamp'), iName=fi('Name'), iPhone=fi('Phone'),
-          iTotal=fi('Order Total'), iReport=fi('Product Report'),
-          iDeliv=fi('Delivered Date'), iBooked=fi('Booked Date');
-    const v=(r,i)=>(i>=0&&r.c[i]&&r.c[i].v!=null)?String(r.c[i].v).trim():'';
-    const fv=(r,i)=>(i>=0&&r.c[i])?(r.c[i].f||v(r,i)):'';
-    const parseD=(r,i)=>{
-      if(i<0||!r.c[i]||r.c[i].v==null)return null;
-      const raw=r.c[i].v;
-      if(typeof raw==='string'&&raw.startsWith('Date(')){
-        const p=raw.replace('Date(','').replace(')','').split(',');
-        return new Date(+p[0],+p[1],+p[2],+(p[3]||0),+(p[4]||0));
-      }
-      if(r.c[i].f){const d=new Date(r.c[i].f);if(!isNaN(d))return d;}
-      const d=new Date(String(r.c[i].v));return isNaN(d)?null:d;
-    };
-    const parseTotal=str=>{if(!str)return 0;const n=parseFloat(str.replace(/[^0-9.]/g,''));return isNaN(n)?0:n;};
-
-    const orders = (ordersTable.rows||[]).map(r=>({
-      name:          v(r,iName),
-      phone:         v(r,iPhone),
-      ts:            parseD(r,iTs),
-      deliveredDate: parseD(r,iDeliv),
-      bookedDate:    parseD(r,iBooked),
-      total:         parseTotal(fv(r,iTotal)||v(r,iTotal)),
-      productReport: v(r,iReport),
-    })).filter(o=>o.name&&o.name.length>1&&o.ts);
-
-    const camps = parseCampaigns(campsTable);
-    renderMIS(orders, camps);
-    document.getElementById('syncInfo').textContent =
-      `✓ Synced · ${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}`;
-  } catch(e) {
-    document.getElementById('syncInfo').textContent = '⚠ Could not connect';
-    document.getElementById('content').innerHTML =
-      `<div class="loading">⚠ ${e.message}<br><br>Make sure sheet is shared as<br>"Anyone with the link → Viewer"</div>`;
-  }
-}
-
-// Re-run with updated init
+// Re-run init
 init();
 setInterval(init, 10 * 60 * 1000);
 </script>
