@@ -45,43 +45,28 @@ html, body {
 
 /* ── HEADER ── */
 header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px;
   background: var(--surface);
   border-bottom: 1.5px solid var(--border);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: var(--shadow);
-  gap: 12px;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: var(--shadow); gap: 10px;
 }
-
-.logo { display: flex; align-items: center; gap: 10px; min-width: 0; }
-
+.logo { display: flex; align-items: center; gap: 9px; min-width: 0; }
 .logo-icon {
-  width: 40px; height: 40px; flex-shrink: 0;
+  width: 38px; height: 38px; flex-shrink: 0;
   background: linear-gradient(135deg, #1a6fc4, #0a9e91);
-  border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px; box-shadow: 0 2px 8px rgba(26,111,196,0.25);
+  border-radius: 11px; display: flex; align-items: center; justify-content: center;
+  font-size: 19px; box-shadow: 0 2px 8px rgba(26,111,196,0.22);
 }
-
-.logo-text { font-weight: 800; font-size: 15px; color: var(--text); letter-spacing: -0.3px; line-height: 1.2; }
-.logo-sub  { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; font-weight: 500; }
-
+.logo-text { font-weight: 800; font-size: 14px; color: var(--text); letter-spacing: -0.3px; line-height: 1.2; }
+.logo-sub  { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.7px; font-weight: 500; }
 .header-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-
 #last-sync { font-size: 10px; color: var(--muted); font-weight: 500; white-space: nowrap; }
-
 .sync-btn {
   display: flex; align-items: center; gap: 5px;
-  background: var(--blue-dim);
-  border: 1.5px solid var(--blue);
-  color: var(--blue);
-  padding: 7px 13px;
-  border-radius: var(--radius-sm);
+  background: var(--blue-dim); border: 1.5px solid var(--blue); color: var(--blue);
+  padding: 7px 12px; border-radius: var(--radius-sm);
   font-family: inherit; font-size: 12px; font-weight: 700;
   cursor: pointer; transition: all 0.2s; white-space: nowrap;
 }
@@ -91,191 +76,155 @@ header {
 
 /* ── TABS ── */
 .tabs { display: flex; gap: 4px; padding: 16px 16px 0; }
-
 .tab {
-  padding: 9px 18px;
+  padding: 9px 0; flex: 1; text-align: center;
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
-  border: 1.5px solid transparent;
-  border-bottom: none;
+  border: 1.5px solid transparent; border-bottom: none;
   font-family: inherit; font-size: 13px; font-weight: 600;
   cursor: pointer; background: transparent; color: var(--muted);
-  transition: all 0.18s; flex: 1; text-align: center;
+  transition: all 0.18s;
 }
 .tab.active { background: var(--surface); border-color: var(--border); color: var(--blue); }
 
 /* ── MAIN ── */
-main { padding: 0 16px 48px; }
-
+main { padding: 0 16px 60px; }
 .tab-pane {
   display: none;
-  background: var(--surface);
-  border: 1.5px solid var(--border);
+  background: var(--surface); border: 1.5px solid var(--border);
   border-radius: 0 var(--radius) var(--radius) var(--radius);
-  padding: 20px 16px;
-  box-shadow: var(--shadow);
+  padding: 18px 14px; box-shadow: var(--shadow);
   animation: fadeUp 0.2s ease;
 }
 .tab-pane.active { display: block; }
 @keyframes fadeUp { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
 
 /* ── SECTION HEAD ── */
-.section-head { margin-bottom: 18px; }
-.section-title { font-size: 17px; font-weight: 800; color: var(--text); letter-spacing: -0.4px; }
-.section-desc  { font-size: 11px; color: var(--muted); margin-top: 3px; font-weight: 400; }
+.section-head { margin-bottom: 16px; }
+.section-title { font-size: 16px; font-weight: 800; color: var(--text); letter-spacing: -0.3px; }
+.section-desc  { font-size: 11px; color: var(--muted); margin-top: 2px; }
 
-/* ── STOCK SELECTOR ── */
-.stock-selector-box {
-  display: flex; flex-direction: column; gap: 12px;
-  background: var(--surface2);
-  border: 1.5px solid var(--border);
-  padding: 16px; border-radius: var(--radius);
-  margin-bottom: 22px;
+/* ── SUBMIT BAR ── */
+.submit-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; margin-bottom: 16px;
+  background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); padding: 10px 14px;
 }
-
-.field-group { display: flex; flex-direction: column; gap: 5px; }
-
-.field-label {
-  font-size: 10px; font-weight: 700; color: var(--muted);
-  text-transform: uppercase; letter-spacing: 0.9px;
-}
-
-select, input[type="number"] {
-  background: var(--surface);
-  border: 1.5px solid var(--border);
-  color: var(--text);
-  padding: 11px 14px;
-  border-radius: var(--radius-sm);
-  font-family: inherit; font-size: 14px; font-weight: 500;
-  width: 100%;
-  transition: border-color 0.18s, box-shadow 0.18s;
-  appearance: none; -webkit-appearance: none;
-}
-select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237090b0' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat; background-position: right 14px center;
-  background-color: var(--surface);
-  padding-right: 36px; cursor: pointer;
-}
-select:focus, input[type="number"]:focus {
-  outline: none; border-color: var(--blue);
-  box-shadow: 0 0 0 3px var(--blue-dim);
-}
-
-.update-btn {
+.submit-bar-info { font-size: 11px; color: var(--muted); font-weight: 500; }
+.submit-bar-info span { font-weight: 700; color: var(--blue); }
+.submit-all-btn {
   background: linear-gradient(135deg, #1a6fc4, #1457a0);
   border: none; color: #fff;
-  padding: 13px; border-radius: var(--radius-sm);
-  font-family: inherit; font-weight: 700; font-size: 15px;
-  cursor: pointer; transition: all 0.2s; width: 100%;
-  box-shadow: 0 3px 12px rgba(26,111,196,0.28);
-  letter-spacing: 0.2px;
+  padding: 10px 20px; border-radius: var(--radius-sm);
+  font-family: inherit; font-weight: 700; font-size: 13px;
+  cursor: pointer; transition: all 0.2s; white-space: nowrap;
+  box-shadow: 0 3px 10px rgba(26,111,196,0.25);
 }
-.update-btn:hover { box-shadow: 0 6px 20px rgba(26,111,196,0.38); transform: translateY(-1px); }
-.update-btn:active { transform: translateY(0); }
-.update-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+.submit-all-btn:hover { box-shadow: 0 5px 16px rgba(26,111,196,0.35); transform: translateY(-1px); }
+.submit-all-btn:active { transform: translateY(0); }
+.submit-all-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
 
-/* ── RESULT SECTION ── */
-#stock-result { display: none; margin-bottom: 22px; }
-
-.result-fish-name {
-  font-size: 18px; font-weight: 800; color: var(--text);
-  margin-bottom: 14px;
-  display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap;
-}
-
-.fish-badge {
-  font-size: 10px; font-weight: 700;
-  padding: 3px 10px; border-radius: 99px;
-  white-space: nowrap; margin-top: 4px;
-}
-
-/* 2x2 metric grid */
-.metric-grid   { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-.metric-grid-3 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
-.metric-card {
-  background: var(--surface2);
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px 14px 12px;
-}
-.metric-card.hi-blue  { border-color: #93c0ef; background: var(--blue-dim); }
-.metric-card.hi-coral { border-color: #f0a99e; background: var(--coral-dim); }
-.metric-card.hi-gold  { border-color: #e0b86a; background: var(--gold-dim); }
-.metric-card.hi-teal  { border-color: #7dccc6; background: var(--teal-dim); }
-
-.metric-label {
-  font-size: 9px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.9px; color: var(--muted); margin-bottom: 6px;
-}
-.metric-value { font-size: 22px; font-weight: 800; line-height: 1.1; color: var(--text); }
-.metric-value.blue  { color: var(--blue); }
-.metric-value.coral { color: var(--coral); }
-.metric-value.gold  { color: var(--gold); }
-.metric-value.teal  { color: var(--teal); }
-.metric-unit { font-size: 10px; color: var(--muted); margin-top: 4px; font-weight: 400; }
-
-/* ── FISH LIST (card-based, mobile friendly) ── */
-.fish-list-wrap {
-  margin-top: 22px;
+/* ── FISH STOCK LIST ── */
+.fish-stock-list {
   border: 1.5px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
 }
-.fish-list-head {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 13px 16px; background: var(--surface2);
+
+/* header row */
+.fish-stock-list-header {
+  display: grid;
+  grid-template-columns: 1fr 90px 80px;
+  gap: 8px;
+  padding: 9px 14px;
+  background: var(--surface2);
   border-bottom: 1.5px solid var(--border);
-}
-.fish-list-title { font-size: 13px; font-weight: 700; color: var(--text); }
-.fish-count-badge {
-  font-size: 10px; background: var(--surface);
-  border: 1px solid var(--border); color: var(--muted);
-  padding: 3px 10px; border-radius: 99px; font-weight: 600;
+  font-size: 9px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.8px; color: var(--muted);
 }
 
-/* Card rows instead of table */
-.fish-row {
-  display: flex; align-items: center;
-  padding: 12px 16px;
+/* each fish row */
+.fish-stock-row {
   border-bottom: 1px solid var(--border2);
-  gap: 10px;
   transition: background 0.12s;
 }
-.fish-row:last-child { border-bottom: none; }
-.fish-row:hover { background: var(--blue-dim); }
+.fish-stock-row:last-child { border-bottom: none; }
+.fish-stock-row.updated { background: rgba(23,160,88,0.05); }
+.fish-stock-row.dirty   { background: rgba(26,111,196,0.04); }
+
+/* top line: name | current | input */
+.fish-row-top {
+  display: grid;
+  grid-template-columns: 1fr 90px 80px;
+  gap: 8px; align-items: center;
+  padding: 10px 14px;
+}
 
 .fish-row-name {
-  flex: 1; font-weight: 600; font-size: 13px;
-  color: var(--text); min-width: 0;
+  font-size: 12px; font-weight: 600; color: var(--text);
+  line-height: 1.3;
 }
-.fish-row-kg {
-  font-size: 12px; font-weight: 700;
-  color: var(--blue); white-space: nowrap;
-  min-width: 54px; text-align: right;
-}
-.fish-row-kg.zero { color: var(--muted); font-weight: 400; }
 
-.status-pill {
-  display: inline-flex; align-items: center;
-  font-size: 9px; font-weight: 700; padding: 3px 8px;
-  border-radius: 99px; text-transform: uppercase; letter-spacing: 0.5px;
-  white-space: nowrap; flex-shrink: 0;
+.fish-current-stock {
+  text-align: center;
 }
-.status-pill.ok   { background: var(--success-dim); color: var(--success); border: 1px solid rgba(23,160,88,0.25); }
-.status-pill.low  { background: var(--coral-dim);   color: var(--coral);   border: 1px solid rgba(224,83,64,0.25); }
-.status-pill.zero { background: var(--surface2);    color: var(--muted);   border: 1px solid var(--border); }
+.fish-current-val {
+  font-size: 13px; font-weight: 700; color: var(--blue);
+  line-height: 1;
+}
+.fish-current-val.zero { color: var(--muted); font-weight: 500; }
+.fish-current-unit { font-size: 9px; color: var(--muted); margin-top: 1px; }
 
-/* ── PRICE TAB ── */
-.price-search-wrap { margin-bottom: 18px; }
-.price-search-input {
+.fish-new-input {
   background: var(--surface);
   border: 1.5px solid var(--border);
   color: var(--text);
-  padding: 11px 16px;
+  padding: 8px 8px;
   border-radius: var(--radius-sm);
-  font-family: inherit; font-size: 14px;
-  width: 100%;
+  font-family: inherit; font-size: 14px; font-weight: 600;
+  width: 100%; text-align: center;
+  transition: border-color 0.18s, box-shadow 0.18s;
+  appearance: none; -webkit-appearance: none;
+}
+.fish-new-input:focus {
+  outline: none; border-color: var(--blue);
+  box-shadow: 0 0 0 3px var(--blue-dim);
+}
+.fish-new-input.has-value {
+  border-color: var(--blue);
+  background: var(--blue-dim);
+  color: var(--blue);
+}
+
+/* bottom line: calc values */
+.fish-row-stats {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  padding: 0 14px 10px;
+}
+.fish-stat-chip {
+  display: flex; align-items: center; gap: 4px;
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 6px; padding: 3px 8px;
+  font-size: 9px; font-weight: 600; color: var(--muted);
+}
+.fish-stat-chip .chip-val {
+  font-weight: 700; font-size: 10px;
+}
+.fish-stat-chip.wastage  .chip-val { color: var(--coral); }
+.fish-stat-chip.usable   .chip-val { color: var(--gold); }
+.fish-stat-chip.sellable .chip-val { color: var(--teal); }
+.fish-stat-chip.ratio    .chip-val { color: var(--blue); }
+.fish-stat-chip.updated-chip {
+  background: var(--success-dim); border-color: rgba(23,160,88,0.25);
+}
+.fish-stat-chip.updated-chip .chip-val { color: var(--success); }
+
+/* ── PRICE TAB ── */
+.price-top { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.price-search-input {
+  background: var(--surface); border: 1.5px solid var(--border);
+  color: var(--text); padding: 11px 14px; border-radius: var(--radius-sm);
+  font-family: inherit; font-size: 14px; width: 100%;
   transition: border-color 0.18s, box-shadow 0.18s;
   appearance: none;
 }
@@ -283,48 +232,38 @@ select:focus, input[type="number"]:focus {
   outline: none; border-color: var(--blue);
   box-shadow: 0 0 0 3px var(--blue-dim);
 }
-
 .price-grid { display: flex; flex-direction: column; gap: 12px; }
-
-/* On wider screens: 2 col grid */
-@media (min-width: 600px) {
+@media (min-width: 580px) {
   .price-grid { display: grid; grid-template-columns: repeat(2, 1fr); }
 }
-@media (min-width: 960px) {
+@media (min-width: 900px) {
   .price-grid { grid-template-columns: repeat(3, 1fr); }
 }
-
 .price-card {
-  background: var(--surface);
-  border: 1.5px solid var(--border);
+  background: var(--surface); border: 1.5px solid var(--border);
   border-radius: var(--radius); overflow: hidden;
   transition: border-color 0.18s, box-shadow 0.18s, transform 0.18s;
   box-shadow: var(--shadow);
 }
 .price-card:hover { border-color: var(--blue); box-shadow: var(--shadow-md); transform: translateY(-2px); }
-
 .price-card-header {
-  padding: 12px 14px; background: var(--surface2);
+  padding: 11px 14px; background: var(--surface2);
   border-bottom: 1.5px solid var(--border);
 }
 .price-card-fish { font-weight: 700; color: var(--text); font-size: 13px; line-height: 1.3; }
 .price-card-sku {
-  font-size: 10px; color: var(--muted); font-weight: 500;
-  margin-top: 3px; display: inline-block;
-  background: var(--surface); padding: 1px 7px;
+  font-size: 10px; color: var(--muted); font-weight: 500; margin-top: 3px;
+  display: inline-block; background: var(--surface); padding: 1px 7px;
   border-radius: 4px; border: 1px solid var(--border);
 }
-
 .price-weights { display: grid; grid-template-columns: 1fr 1fr; }
-
 .price-weight-cell {
-  padding: 12px 14px;
+  padding: 11px 14px;
   border-right: 1px solid var(--border2);
   border-bottom: 1px solid var(--border2);
 }
-.price-weight-cell:nth-child(even)      { border-right: none; }
-.price-weight-cell:nth-last-child(-n+2) { border-bottom: none; }
-
+.price-weight-cell:nth-child(even)        { border-right: none; }
+.price-weight-cell:nth-last-child(-n+2)   { border-bottom: none; }
 .price-wt-label {
   font-size: 9px; font-weight: 700; text-transform: uppercase;
   letter-spacing: 0.8px; color: var(--muted); margin-bottom: 4px;
@@ -336,44 +275,40 @@ select:focus, input[type="number"]:focus {
 /* ── LOADING / EMPTY / TOAST ── */
 .loading-wrap {
   display: flex; flex-direction: column; align-items: center;
-  justify-content: center; padding: 50px 20px; gap: 12px; color: var(--muted);
-  font-size: 13px; font-weight: 500;
+  justify-content: center; padding: 50px 20px; gap: 12px;
+  color: var(--muted); font-size: 13px; font-weight: 500;
 }
 .spinner {
-  width: 32px; height: 32px;
-  border: 3px solid var(--border);
-  border-top-color: var(--blue);
+  width: 30px; height: 30px;
+  border: 3px solid var(--border); border-top-color: var(--blue);
   border-radius: 50%; animation: spin 0.8s linear infinite;
 }
-.empty-state { text-align: center; padding: 50px 20px; color: var(--muted); }
-.empty-icon  { font-size: 36px; margin-bottom: 10px; }
+.empty-state { text-align: center; padding: 40px 20px; color: var(--muted); }
 
 .toast {
-  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
   padding: 11px 20px; border-radius: var(--radius-sm);
   font-weight: 700; font-size: 13px; z-index: 9999;
   animation: toastIn 0.3s ease;
   display: flex; align-items: center; gap: 8px;
-  max-width: 90vw; white-space: nowrap;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  max-width: 90vw; box-shadow: 0 4px 20px rgba(0,0,0,0.15);
 }
 .toast.success { background: var(--success); color: #fff; }
 .toast.error   { background: var(--coral);   color: #fff; }
-@keyframes toastIn { from { opacity:0; transform: translateX(-50%) translateY(10px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
+@keyframes toastIn {
+  from { opacity:0; transform: translateX(-50%) translateY(10px); }
+  to   { opacity:1; transform: translateX(-50%) translateY(0); }
+}
 
-/* ── DESKTOP overrides ── */
+/* ── DESKTOP ── */
 @media (min-width: 700px) {
   header { padding: 14px 32px; }
   main, .tabs { padding-left: 32px; padding-right: 32px; }
-  .tab-pane { padding: 28px; }
-  .stock-selector-box { flex-direction: row; align-items: flex-end; }
-  .stock-selector-box .field-group:first-child { flex: 2; }
-  .stock-selector-box .field-group:nth-child(2) { flex: 1; }
-  .update-btn { width: auto; padding: 13px 28px; }
-  .metric-grid   { grid-template-columns: repeat(4, 1fr); }
-  .metric-grid-3 { grid-template-columns: repeat(3, 1fr); }
-  .section-head { display: flex; align-items: flex-start; justify-content: space-between; }
-  .price-search-wrap { display: flex; justify-content: flex-end; }
+  .tab-pane { padding: 24px 28px; }
+  .fish-stock-list-header { grid-template-columns: 1fr 110px 100px; }
+  .fish-row-top           { grid-template-columns: 1fr 110px 100px; }
+  .fish-new-input { font-size: 15px; }
+  .price-top { flex-direction: row; align-items: center; justify-content: space-between; }
   .price-search-input { width: 260px; }
   .toast { left: auto; right: 28px; transform: none; }
   @keyframes toastIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
@@ -393,7 +328,7 @@ select:focus, input[type="number"]:focus {
   <div class="header-right">
     <span id="last-sync">Not synced</span>
     <button class="sync-btn" onclick="syncAll()">
-      <span class="sync-icon">↻</span> Sync Sheet
+      <span class="sync-icon">↻</span> Sync
     </button>
   </div>
 </header>
@@ -405,98 +340,45 @@ select:focus, input[type="number"]:focus {
 
 <main>
 
-  <!-- TAB 1: STOCK -->
+  <!-- ══ TAB 1: STOCK ══ -->
   <div id="tab-stock" class="tab-pane active">
     <div class="section-head">
-      <div>
-        <div class="section-title">Daily Stock Entry</div>
-        <div class="section-desc">Select fish → enter inward kg → update sheet instantly</div>
-      </div>
+      <div class="section-title">Daily Stock Entry</div>
+      <div class="section-desc">Enter new stock for any fish → Submit All to update sheet</div>
     </div>
 
-    <div class="stock-selector-box">
-      <div class="field-group">
-        <label class="field-label">Fish Name</label>
-        <select id="fish-select" onchange="onFishSelect()">
-          <option value="">— Loading... —</option>
-        </select>
+    <!-- SUBMIT BAR -->
+    <div class="submit-bar">
+      <div class="submit-bar-info">
+        <span id="filled-count">0</span> fish ready to update
       </div>
-      <div class="field-group">
-        <label class="field-label">Inward Stock (kg)</label>
-        <input type="number" id="inward-input" min="0" step="0.1" placeholder="e.g. 25.5" />
-      </div>
-      <button class="update-btn" onclick="submitStockUpdate()" id="update-btn">✓ Update Sheet</button>
-    </div>
-
-    <!-- RESULT CARDS -->
-    <div id="stock-result">
-      <div class="result-fish-name">
-        <span id="result-name-text">—</span>
-        <span class="fish-badge" id="result-badge">Updated ✓</span>
-      </div>
-      <div class="metric-grid">
-        <div class="metric-card hi-blue">
-          <div class="metric-label">Inward Stock</div>
-          <div class="metric-value blue" id="r-inward">—</div>
-          <div class="metric-unit">kg received</div>
-        </div>
-        <div class="metric-card hi-coral">
-          <div class="metric-label">Actual Wastage</div>
-          <div class="metric-value coral" id="r-wastage">—</div>
-          <div class="metric-unit">kg loss</div>
-        </div>
-        <div class="metric-card hi-gold">
-          <div class="metric-label">Usable Stock</div>
-          <div class="metric-value gold" id="r-usable">—</div>
-          <div class="metric-unit">kg usable</div>
-        </div>
-        <div class="metric-card hi-teal">
-          <div class="metric-label">Sellable Stock (Shopify)</div>
-          <div class="metric-value teal" id="r-sellable">—</div>
-          <div class="metric-unit">kg sellable</div>
-        </div>
-      </div>
-      <div class="metric-grid-3" style="margin-top:10px;">
-        <div class="metric-card">
-          <div class="metric-label">Conversion Ratio</div>
-          <div class="metric-value blue" id="r-ratio" style="font-size:18px;">—</div>
-          <div class="metric-unit">sellable / inward</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-label">Col E Value</div>
-          <div class="metric-value" id="r-cole" style="font-size:18px;">—</div>
-          <div class="metric-unit">x2 calculated</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-label">Col F Value</div>
-          <div class="metric-value" id="r-colf" style="font-size:18px;">—</div>
-          <div class="metric-unit">sheet formula</div>
-        </div>
-      </div>
+      <button class="submit-all-btn" id="submit-all-btn" onclick="submitAll()">
+        ✓ Submit All
+      </button>
     </div>
 
     <!-- FISH LIST -->
-    <div class="fish-list-wrap">
-      <div class="fish-list-head">
-        <div class="fish-list-title">All Fish — Stock Overview</div>
-        <span class="fish-count-badge" id="fish-count">Loading...</span>
+    <div class="fish-stock-list">
+      <div class="fish-stock-list-header">
+        <div>Fish Name</div>
+        <div style="text-align:center;">Current Stock</div>
+        <div style="text-align:center;">Add New (kg)</div>
       </div>
-      <div id="fish-list-body">
+      <div id="fish-stock-body">
         <div class="loading-wrap"><div class="spinner"></div><div>Fetching from sheet...</div></div>
       </div>
     </div>
   </div>
 
-  <!-- TAB 2: PRICES -->
+  <!-- ══ TAB 2: PRICES ══ -->
   <div id="tab-price" class="tab-pane">
-    <div class="section-head">
+    <div class="price-top">
       <div>
         <div class="section-title">Fish Price Board</div>
-        <div class="section-desc">All prices are <strong>Gross Weight Price</strong> · 250g, 500g, 750g & 1kg auto-calculated</div>
+        <div class="section-desc">All prices are <strong>Gross Weight Price</strong> · Auto-calculated from 500g base</div>
       </div>
-      <div class="price-search-wrap">
-        <input class="price-search-input" type="text" id="price-search" placeholder="🔍 Search fish..." oninput="filterPrices()" />
-      </div>
+      <input class="price-search-input" type="text" id="price-search"
+             placeholder="🔍 Search fish..." oninput="filterPrices()" />
     </div>
     <div id="price-grid-wrap">
       <div class="loading-wrap"><div class="spinner"></div><div>Fetching prices...</div></div>
@@ -508,9 +390,11 @@ select:focus, input[type="number"]:focus {
 <script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbytnSGNyl7SA2TjX-8FIuuW95bSMUwnuhkC2iJ2dRsNu464R6t5hKWUePqPjNw8lgOXZQ/exec';
 
-let stockData = [];
-let priceData = [];
+let stockData  = [];  // [{fishName, inwardKg, colE..K, rowIndex}]
+let priceData  = [];
+let dirtyRows  = {};  // fishName → new kg value (only touched fields)
 
+// ══ INIT ══
 window.onload = () => syncAll();
 
 function switchTab(tab, btn) {
@@ -520,12 +404,13 @@ function switchTab(tab, btn) {
   document.getElementById('tab-' + tab).classList.add('active');
 }
 
+// ══ SYNC ══
 async function syncAll() {
   const btn = document.querySelector('.sync-btn');
   btn.classList.add('spinning'); btn.disabled = true;
   try {
     await Promise.all([fetchStockData(), fetchPriceData()]);
-    const now = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+    const now = new Date().toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
     document.getElementById('last-sync').textContent = 'Synced ' + now;
     showToast('✓ Sheet synced', 'success');
   } catch(e) {
@@ -535,120 +420,190 @@ async function syncAll() {
   }
 }
 
-// ── STOCK FETCH via GET (CORS safe) ──
+// ══ FETCH STOCK ══
 async function fetchStockData() {
   const res = await fetch(SCRIPT_URL + '?action=getStock', { mode: 'cors' });
   if (!res.ok) throw new Error('HTTP ' + res.status);
   const json = await res.json();
   if (json.error) throw new Error(json.error);
   stockData = json.rows;
-  renderFishDropdown(json.rows);
-  renderFishList(json.rows, json.headers);
+  dirtyRows = {};
+  renderFishStockList();
 }
 
-function renderFishDropdown(rows) {
-  const sel = document.getElementById('fish-select');
-  sel.innerHTML = '<option value="">— Select Fish —</option>';
-  rows.forEach(r => {
-    const opt = document.createElement('option');
-    opt.value = r.fishName;
-    opt.textContent = r.fishName;
-    sel.appendChild(opt);
-  });
-}
+// ══ RENDER FISH LIST ══
+function renderFishStockList() {
+  const body = document.getElementById('fish-stock-body');
+  if (!stockData.length) {
+    body.innerHTML = '<div class="empty-state">No fish found</div>';
+    return;
+  }
 
-function onFishSelect() {
-  const name = document.getElementById('fish-select').value;
-  if (!name) { document.getElementById('stock-result').style.display = 'none'; return; }
-  const row = stockData.find(r => r.fishName === name);
-  if (row) showStockResult(row, false);
-}
+  body.innerHTML = stockData.map((r, idx) => {
+    const currentKg = (r.inwardKg !== '' && r.inwardKg !== undefined && r.inwardKg !== null)
+                      ? Number(r.inwardKg) : 0;
+    const isZero = currentKg === 0;
 
-function renderFishList(rows, headers) {
-  document.getElementById('fish-count').textContent = rows.length + ' fish';
-  document.getElementById('fish-list-body').innerHTML = rows.map(r => {
-    const inward   = r.inwardKg;
-    const sellable = r.sellableStock;
-    let pill = '';
-    if (!inward || inward == 0) {
-      pill = '<span class="status-pill zero">No Stock</span>';
-    } else if (sellable && Number(sellable) > 0) {
-      pill = '<span class="status-pill ok">✓ Ready</span>';
-    } else {
-      pill = '<span class="status-pill low">Low</span>';
-    }
-    const hasStock = inward && inward != 0;
-    return `<div class="fish-row">
-      <div class="fish-row-name">${r.fishName}</div>
-      <div class="fish-row-kg ${hasStock ? '' : 'zero'}">${hasStock ? inward + ' kg' : '— kg'}</div>
-      ${pill}
+    return `<div class="fish-stock-row" id="row-${idx}">
+      <div class="fish-row-top">
+        <div class="fish-row-name">${r.fishName}</div>
+        <div class="fish-current-stock">
+          <div class="fish-current-val ${isZero ? 'zero' : ''}" id="cur-${idx}">
+            ${isZero ? '—' : currentKg}
+          </div>
+          <div class="fish-current-unit">kg inward</div>
+        </div>
+        <input
+          type="number"
+          class="fish-new-input"
+          id="inp-${idx}"
+          min="0"
+          step="0.1"
+          placeholder=""
+          data-idx="${idx}"
+          oninput="onInputChange(this)"
+          onfocus="onInputFocus(this)"
+        />
+      </div>
+      <div class="fish-row-stats" id="stats-${idx}">
+        ${buildStatsChips(r, false)}
+      </div>
     </div>`;
   }).join('');
+
+  updateFilledCount();
 }
 
-// ── STOCK UPDATE via GET with params (CORS safe) ──
-async function submitStockUpdate() {
-  const fishName = document.getElementById('fish-select').value;
-  const inwardKg = parseFloat(document.getElementById('inward-input').value);
-  if (!fishName)                     { showToast('Fish select pannanum!', 'error'); return; }
-  if (isNaN(inwardKg) || inwardKg < 0) { showToast('Valid kg enter pannanum!', 'error'); return; }
+function buildStatsChips(r, justUpdated) {
+  const wastage  = (r.colI  !== undefined && r.colI  !== '') ? r.colI  : null;
+  const usable   = (r.colJ  !== undefined && r.colJ  !== '') ? r.colJ  : null;
+  const sellable = (r.sellableStock !== undefined && r.sellableStock !== '') ? r.sellableStock : null;
+  const inward   = (r.inwardKg !== undefined && r.inwardKg !== '') ? Number(r.inwardKg) : 0;
+  const ratio    = (sellable !== null && inward > 0)
+                   ? (parseFloat(sellable) / inward).toFixed(2) + 'x' : null;
 
-  const btn = document.getElementById('update-btn');
-  btn.disabled = true; btn.textContent = 'Updating...';
+  const updClass = justUpdated ? ' updated-chip' : '';
 
-  try {
-    // Use GET with params — fully CORS safe for Apps Script
-    const params = new URLSearchParams({
-      action: 'updateStock',
-      fishName: fishName,
-      inwardKg: inwardKg
-    });
-    const res = await fetch(SCRIPT_URL + '?' + params.toString(), { mode: 'cors' });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const json = await res.json();
-    if (json.error) throw new Error(json.error);
+  let chips = '';
+  if (wastage  !== null) chips += `<div class="fish-stat-chip wastage${updClass}"><span>Wastage</span><span class="chip-val">${wastage} kg</span></div>`;
+  if (usable   !== null) chips += `<div class="fish-stat-chip usable${updClass}"><span>Usable</span><span class="chip-val">${usable} kg</span></div>`;
+  if (sellable !== null) chips += `<div class="fish-stat-chip sellable${updClass}"><span>Sellable</span><span class="chip-val">${sellable} kg</span></div>`;
+  if (ratio    !== null) chips += `<div class="fish-stat-chip ratio${updClass}"><span>Ratio</span><span class="chip-val">${ratio}</span></div>`;
 
-    const idx = stockData.findIndex(r => r.fishName === fishName);
-    if (idx !== -1) stockData[idx] = { ...stockData[idx], ...json.updatedData, inwardKg: json.inwardKg };
+  return chips || '<div class="fish-stat-chip"><span class="chip-val" style="color:var(--muted)">No data yet</span></div>';
+}
 
-    showStockResult({ fishName, ...json.updatedData, inwardKg }, true);
-    renderFishList(stockData, []);
-    showToast('✓ Sheet updated — ' + fishName, 'success');
-  } catch(e) {
-    showToast('Update failed: ' + e.message, 'error');
-  } finally {
-    btn.disabled = false; btn.textContent = '✓ Update Sheet';
+// ══ INPUT HANDLERS ══
+function onInputChange(input) {
+  const idx  = parseInt(input.dataset.idx);
+  const val  = input.value;
+
+  if (val === '') {
+    // untouched / cleared → remove from dirty
+    delete dirtyRows[idx];
+    input.classList.remove('has-value');
+  } else {
+    // any value including 0 → mark dirty
+    dirtyRows[idx] = val;
+    input.classList.add('has-value');
+  }
+
+  // highlight row
+  const row = document.getElementById('row-' + idx);
+  if (val !== '') {
+    row.classList.add('dirty');
+  } else {
+    row.classList.remove('dirty');
+  }
+
+  updateFilledCount();
+}
+
+function onInputFocus(input) {
+  // scroll row into view nicely on mobile
+  setTimeout(() => input.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
+}
+
+function updateFilledCount() {
+  const count = Object.keys(dirtyRows).length;
+  document.getElementById('filled-count').textContent = count;
+  document.getElementById('submit-all-btn').disabled = count === 0;
+}
+
+// ══ SUBMIT ALL ══
+async function submitAll() {
+  const toUpdate = Object.keys(dirtyRows);
+  if (toUpdate.length === 0) { showToast('Etha fish update pannanum?', 'error'); return; }
+
+  const btn = document.getElementById('submit-all-btn');
+  btn.disabled = true;
+  btn.textContent = 'Updating...';
+
+  let successCount = 0;
+  let failCount    = 0;
+
+  // sequential updates — avoid Apps Script rate limit
+  for (const idx of toUpdate) {
+    const row      = stockData[idx];
+    const newKg    = parseFloat(dirtyRows[idx]);
+    const currentKg = (row.inwardKg !== '' && row.inwardKg !== undefined && row.inwardKg !== null)
+                      ? Number(row.inwardKg) : 0;
+    const totalKg  = currentKg + (isNaN(newKg) ? 0 : newKg);
+
+    try {
+      const params = new URLSearchParams({
+        action:    'updateStock',
+        fishName:  row.fishName,
+        inwardKg:  totalKg   // send total (current + new)
+      });
+      const res  = await fetch(SCRIPT_URL + '?' + params.toString(), { mode: 'cors' });
+      const json = await res.json();
+
+      if (json.error) throw new Error(json.error);
+
+      // update local data
+      stockData[idx] = {
+        ...stockData[idx],
+        inwardKg: json.inwardKg,
+        ...json.updatedData
+      };
+
+      // update UI for this row
+      const curEl = document.getElementById('cur-' + idx);
+      curEl.textContent = json.inwardKg;
+      curEl.classList.remove('zero');
+
+      const statsEl = document.getElementById('stats-' + idx);
+      statsEl.innerHTML = buildStatsChips(stockData[idx], true);
+
+      const rowEl = document.getElementById('row-' + idx);
+      rowEl.classList.remove('dirty');
+      rowEl.classList.add('updated');
+
+      // clear input
+      const inputEl = document.getElementById('inp-' + idx);
+      inputEl.value = '';
+      inputEl.classList.remove('has-value');
+
+      successCount++;
+    } catch(e) {
+      failCount++;
+      console.error('Failed for ' + row.fishName + ':', e.message);
+    }
+  }
+
+  dirtyRows = {};
+  updateFilledCount();
+  btn.textContent = '✓ Submit All';
+
+  if (failCount === 0) {
+    showToast(`✓ ${successCount} fish updated successfully!`, 'success');
+  } else {
+    showToast(`${successCount} updated, ${failCount} failed`, 'error');
   }
 }
 
-function showStockResult(row, justUpdated) {
-  document.getElementById('stock-result').style.display = 'block';
-  document.getElementById('result-name-text').textContent = row.fishName;
-  const badge = document.getElementById('result-badge');
-  badge.textContent = justUpdated ? 'Updated ✓' : 'Current Data';
-  badge.style.cssText = justUpdated
-    ? 'background:var(--success-dim);border:1px solid rgba(23,160,88,0.35);color:var(--success)'
-    : 'background:var(--blue-dim);border:1px solid rgba(26,111,196,0.35);color:var(--blue)';
-
-  const inward   = row.inwardKg || 0;
-  const colI     = (row.colI !== undefined && row.colI !== '') ? row.colI : '—';
-  const colJ     = (row.colJ !== undefined && row.colJ !== '') ? row.colJ : '—';
-  const sellable = (row.sellableStock !== undefined && row.sellableStock !== '') ? row.sellableStock : '—';
-  const ratio    = (sellable !== '—' && Number(inward) > 0)
-                   ? (parseFloat(sellable) / Number(inward)).toFixed(2) + 'x' : '—';
-
-  document.getElementById('r-inward').textContent   = inward + ' kg';
-  document.getElementById('r-wastage').textContent  = colI !== '—' ? colI + ' kg' : '—';
-  document.getElementById('r-usable').textContent   = colJ !== '—' ? colJ + ' kg' : '—';
-  document.getElementById('r-sellable').textContent = sellable !== '—' ? sellable + ' kg' : '—';
-  document.getElementById('r-ratio').textContent    = ratio;
-  document.getElementById('r-cole').textContent     = (row.colE !== undefined && row.colE !== '') ? row.colE : '—';
-  document.getElementById('r-colf').textContent     = (row.colF !== undefined && row.colF !== '') ? row.colF : '—';
-
-  document.getElementById('stock-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-}
-
-// ── PRICE FETCH ──
+// ══ PRICE FETCH ══
 async function fetchPriceData() {
   const res = await fetch(SCRIPT_URL + '?action=getPrices', { mode: 'cors' });
   if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -661,7 +616,8 @@ async function fetchPriceData() {
 function filterPrices() {
   const q = document.getElementById('price-search').value.toLowerCase();
   renderPriceGrid(priceData.filter(r =>
-    r.fishName.toLowerCase().includes(q) || (r.sku && r.sku.toLowerCase().includes(q))
+    r.fishName.toLowerCase().includes(q) ||
+    (r.sku && r.sku.toLowerCase().includes(q))
   ));
 }
 
@@ -673,7 +629,7 @@ function calcPrice(base, weight) {
 function renderPriceGrid(rows) {
   const wrap = document.getElementById('price-grid-wrap');
   if (!rows || rows.length === 0) {
-    wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">🐠</div><div>No fish found</div></div>';
+    wrap.innerHTML = '<div class="empty-state">🐠 No fish found</div>';
     return;
   }
   wrap.innerHTML = '<div class="price-grid">' + rows.map(r => {
@@ -713,6 +669,7 @@ function renderPriceGrid(rows) {
   }).join('') + '</div>';
 }
 
+// ══ TOAST ══
 function showToast(msg, type = 'success') {
   const ex = document.querySelector('.toast');
   if (ex) ex.remove();
